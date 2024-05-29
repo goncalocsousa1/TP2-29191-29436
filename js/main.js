@@ -1,22 +1,24 @@
+import MainScene from "./MainScene.js";
+
 const config = {
     width: 512,
-    height: 432,
+    height: 430,
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene:[],
-    scale:{
+    scene: [MainScene],
+    scale: {
         zoom:2,
     },
-    physics:{
+    physics: {
         default: 'matter',
-        matter:{
+        matter: {
             debug: true,
             gravity: {y:0},
         }
     },
-    plugins:{
-        scene:[
+    plugins: {
+        scene: [
             {
                 plugin: PhaserMatterCollisionPlugin,
                 key: 'matterCollision',

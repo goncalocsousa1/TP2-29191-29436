@@ -6,6 +6,7 @@ export default class MainScene extends Phaser.Scene {
     preload() {
         console.log("preload");
         this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
+        //this.load.animation('nerd_anim', 'assets/images/Player/nerd_anim.json');
     }
 
     create() {
@@ -26,7 +27,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     update() {
-        console.log("update");
+        //this.player.anims.play('andar-direita-animation', true);
         const speed = 2.5;
         let playerVelocity = new Phaser.Math.Vector2();
 

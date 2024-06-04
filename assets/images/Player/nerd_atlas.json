@@ -1,0 +1,164 @@
+{
+    "frames": [
+        {
+            "filename": "frente-parado",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 0,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "esquerda-andar1",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 96,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "frente-andar1",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 0,
+                "y": 96
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "esquerda-parado",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 96,
+                "y": 96
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "esquerda-andar2",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 192,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "direita-andar1",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 192,
+                "y": 96
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "direita-parado",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 0,
+                "y": 192
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "direita-andar2",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 96,
+                "y": 192
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "tras-andar1",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 192,
+                "y": 192
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "tras-andar2",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 288,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "tras-parado",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 288,
+                "y": 96
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "frente-andar2",
+            "frame": {
+                "w": 96,
+                "h": 96,
+                "x": 288,
+                "y": 192
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        }
+    ],
+    "meta": {
+        "description": "Atlas generado con Atlas Packer Gamma V2",
+        "web": "https://gammafp.github.io/atlas-packer-phaser/"
+    }
+}

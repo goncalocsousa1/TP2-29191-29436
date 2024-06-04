@@ -5,11 +5,13 @@ export default class MainScene extends Phaser.Scene {
 
     preload() {
         console.log("preload");
+        this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
     }
 
     create() {
         console.log("create");
-        this.player = new Phaser.Physics.Matter.Sprite(this.matter.world);
+        this.player = new Phaser.Physics.Matter.Sprite(this.matter.world, 250, 200, 'Nerd', 'frente-parado');
+        this.add.existing(this.player);
         this.inputKeys = this.input.keyboard.addKeys({
 
             up: Phaser.Input.Keyboard.KeyCodes.W,

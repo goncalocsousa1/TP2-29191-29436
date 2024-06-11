@@ -6,12 +6,17 @@ export default class MainScene extends Phaser.Scene {
     preload() {
         console.log("preload");
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', {frameWidth: 96, frameHeight: 96});
+        this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
+        this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
     }
 
     create() {
         console.log("create");
         this.player = new Phaser.Physics.Matter.Sprite(this.matter.world, 250, 200, 'nerd').setScale(0.75);
         this.add.existing(this.player);
+
+        this.fullHealthHeart = this.add.image(25, 25, 'full_health_heart').setScale(1);
+        this.halfHealthHeart = this.add.image(50, 25, 'half_health_heart').setScale(1);
 
         this.anims.create({
             key: 'andar-direita-animation',

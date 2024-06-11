@@ -1,8 +1,8 @@
 import MainScene from "./MainScene.js";
 
 const config = {
-    width: 500,
-    height: 425,
+    width: 500,     //950
+    height: 425,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',

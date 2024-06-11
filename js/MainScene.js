@@ -8,6 +8,7 @@ export default class MainScene extends Phaser.Scene {
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', {frameWidth: 96, frameHeight: 96});
         this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
+        this.load.image('empty_health_heart', 'assets/images/HUD/empty_health_heart.png');
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
     }
 
@@ -16,10 +17,12 @@ export default class MainScene extends Phaser.Scene {
         this.player = new Phaser.Physics.Matter.Sprite(this.matter.world, 250, 200, 'nerd').setScale(0.75);
         this.add.existing(this.player);
 
-        this.nerdFace = this.add.image(75, 40, 'nerd_face').setScale(0.25);
-        this.fullHealthHeart = this.add.image(50, 25, 'full_health_heart').setScale(1);
-        this.halfHealthHeart = this.add.image(65, 25, 'full_health_heart').setScale(1);
-        this.halfHealthHeart = this.add.image(80, 25, 'full_health_heart').setScale(1);
+        this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
+        this.fullHealthHeart = this.add.image(70, 25, 'full_health_heart').setScale(2);
+        this.halfHealthHeart = this.add.image(100, 25, 'full_health_heart').setScale(2);
+        this.halfHealthHeart = this.add.image(130, 25, 'full_health_heart').setScale(2);
+        this.halfHealthHeart = this.add.image(160, 25, 'half_health_heart').setScale(2);
+        this.halfHealthHeart = this.add.image(190, 25, 'empty_health_heart').setScale(2);
 
         this.anims.create({
             key: 'andar-direita-animation',

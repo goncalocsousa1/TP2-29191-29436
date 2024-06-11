@@ -5,6 +5,9 @@ export default class MainScene extends Phaser.Scene {
 
     preload() {
         console.log("preload");
+        his.load.tilemapTiledJSON('map', 'assets/maps/map1.json');
+        this.load.image("Dungeon_Tileset","assets/images/tiled/Dungeon_Tileset.png");
+        this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', {frameWidth: 96, frameHeight: 96});
         this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
@@ -12,6 +15,12 @@ export default class MainScene extends Phaser.Scene {
 
     create() {
         console.log("create");
+        //load mapa
+        const map = this.make.tilemap({ key: 'map' });
+        const tileset = map.addTilesetImage('Dungeon_Tileset', 'tiles');
+        const layer1 = map.createLayer('Tile Layer 1', tileset);
+
+
         this.player = new Phaser.Physics.Matter.Sprite(this.matter.world, 250, 200, 'nerd').setScale(0.75);
         this.add.existing(this.player);
 

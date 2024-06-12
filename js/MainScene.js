@@ -17,6 +17,7 @@ export default class MainScene extends Phaser.Scene {
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
         this.load.image('empty_health_heart', 'assets/images/HUD/empty_health_heart.png');
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
+        this.load.image('internet_explorer', 'assets/images/Enemies/internetExplorer.png')
     }
 
     create() {
@@ -34,6 +35,8 @@ export default class MainScene extends Phaser.Scene {
         this.halfHealthHeart = this.add.image(130, 25, 'full_health_heart').setScale(2);
         this.halfHealthHeart = this.add.image(160, 25, 'half_health_heart').setScale(2);
         this.halfHealthHeart = this.add.image(190, 25, 'empty_health_heart').setScale(2);
+
+        this.internetExplorer = this.add.image(250, 250, 'internet_explorer').setScale(0.05);
 
         this.anims.create({
             key: 'andar-direita-animation',

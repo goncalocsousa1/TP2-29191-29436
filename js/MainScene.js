@@ -166,6 +166,10 @@ export default class MainScene extends Phaser.Scene {
             isMoving = true;
         }
 
+        if (!isMoving) {
+            this.player.anims.stop();
+        }
+
         playerVelocity.normalize();
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);

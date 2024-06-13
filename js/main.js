@@ -11,7 +11,7 @@ const config = {
         zoom:2,
     },
     physics: {
-        default: 'matter',
+        default: 'arcade',
         matter: {
             debug: true,
             gravity: {y:0},

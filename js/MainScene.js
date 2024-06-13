@@ -27,7 +27,7 @@ export default class MainScene extends Phaser.Scene {
         const layer1 = map.createLayer('Camada de Blocos 1', tileset);
     
         // Create the player with a circular hitbox
-        const playerRadius = 36; // Adjust the radius as needed
+        const playerRadius = 23; // Adjust the radius as needed
         const { Bodies } = Phaser.Physics.Matter.Matter;
         const playerBody = Bodies.circle(0, 0, playerRadius, { isSensor: false });
         this.player = this.matter.add.sprite(250, 200, 'nerd').setScale(0.75);
@@ -164,7 +164,7 @@ export default class MainScene extends Phaser.Scene {
             this.player.y - this.internetExplorer.y
         );
     
-        const playerRadius = 36; // Radius of the player's hitbox   
+        const playerRadius = 23; // Radius of the player's hitbox   
         const enemyRadius = 36; // Radius of the enemy's hitbox
         const minDistance = playerRadius + enemyRadius; // Minimum distance before stopping the enemy
     

@@ -4,10 +4,11 @@ export default class MainScene extends Phaser.Scene {
     constructor() {
         super('MainScene');
         this.bullets;
-        this.canShootFireball = true;
-        this.enemyHits = 0;
+        this.canShootIce = true;
+        this.enemyHits = 3;
         this.isEnemyDestroyed = false;
         this.hitCooldown = false;
+        this.currentDirection;
     }
 
     preload() {
@@ -33,7 +34,7 @@ export default class MainScene extends Phaser.Scene {
         const map = this.make.tilemap({ key: 'map' });
         const tileset = map.addTilesetImage('Minifantasy_ForgottenPlainsTiles', 'tiles');
         const layer1 = map.createLayer('Camada de Blocos 1', tileset);
-
+        
         // Create the player with a circular hitbox
         const playerRadius = 23; // Ajuste o raio conforme necessário
 
@@ -50,6 +51,8 @@ export default class MainScene extends Phaser.Scene {
 
         this.internetExplorer = this.physics.add.sprite(250, 250, 'internet_explorer').setScale(0.20);
         this.internetExplorer.setCircle(32);
+        //this.internetExplorer.lives = 3; 
+        console.log('Vidas do Inimigo na criação:', this.enemyHits);
 
 
 
@@ -114,9 +117,9 @@ export default class MainScene extends Phaser.Scene {
             defaultKey: 'ice',
             runChildUpdate: true 
         });
-
+        
         // Colisão entre balas e inimigos
-        this.physics.add.collider(this.bullets, this.internetExplorer, this.bullet, null, this);
+        //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
     }
 
     update() {
@@ -129,11 +132,13 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.y = -1;
             this.player.anims.play('andar-frente-animation', true);
             isMoving = true;
+            this.currentDirection = 'up';
         }
         if (this.inputKeys.down.isDown && (this.inputKeys.right.isDown || this.inputKeys.left.isDown)) {
             playerVelocity.y = 1;
             this.player.anims.play('andar-tras-animation', true);
             isMoving = true;
+            this.currentDirection = 'down';
         }
 
         // Handle single key presses
@@ -141,6 +146,7 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.x = -1;
             if (!isMoving) {
                 this.player.anims.play('andar-esquerda-animation', true);
+                this.currentDirection = 'left';
             }
             isMoving = true;
         }
@@ -148,6 +154,7 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.x = 1;
             if (!isMoving) {
                 this.player.anims.play('andar-direita-animation', true);
+                this.currentDirection = 'right';
             }
             isMoving = true;
         }
@@ -155,6 +162,7 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.y = -1;
             if (!isMoving) {
                 this.player.anims.play('andar-frente-animation', true);
+                this.currentDirection = 'up';
             }
             isMoving = true;
         }
@@ -162,6 +170,7 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.y = 1;
             if (!isMoving) {
                 this.player.anims.play('andar-tras-animation', true);
+                this.currentDirection = 'down';
             }
             isMoving = true;
         }
@@ -210,53 +219,95 @@ export default class MainScene extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.inputKeys.space)) {
             this.fireBullet();
         }
+        
     }
 
     fireBullet() {
-        if(!this.canShootFireball) return;
-        this.canShootFireball = false;
-        const icebullet = this.bullets.get(this.player.x, this.player.y, 'ice').setScale(2);
-        
-        console.log("Bullet fired!");
-        icebullet.anims.play("Ataque");
-        this.physics.add.collider(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
-        icebullet.setPosition(this.player.x, this.player.y - 50);
-        icebullet.setVelocityY(-400);
-            
-        this.canShootFireball = true;
-    }
-
-    bulletHitEnemy(bullet, enemy) {
-        // Verifica se o inimigo já está destruído ou se está em cooldown
-        if (!this.isEnemyDestroyed && !this.hitCooldown) {
-            this.hitCooldown = true;  // Ativa o cooldown para evitar hits múltiplos
-            this.enemyHits += 1;  // Incrementa o contador de hits
-            console.log("Enemy hits: " + this.enemyHits);
+        if (!this.canShootIce) return;
+        this.canShootIce = false;
     
-            // Para a bala e a posiciona no local do impacto
-            bullet.setVelocity(0, 0);
-            bullet.setPosition(enemy.x, enemy.y);
+        let bulletX = this.player.x;
+        let bulletY = this.player.y;
+        const offset = 20;  // Ajuste de posição
+        let velocityX = 0;
+        let velocityY = 0;
     
-            // Delay para processar a lógica de destruição ou animação
-            this.time.delayedCall(500, () => {
-                console.log("destroi");
-                bullet.destroy();  // Destroi a bala após o delay
-            
-                if (this.enemyHits >= 3 && !this.isEnemyDestroyed) {
-                    enemy.destroy();  // Destroi o inimigo se o número de hits é alcançado
-                    this.isEnemyDestroyed = true;
-                    console.log("Enemy destroyed!");
-                } else {
-                    enemy.anims.play("EnemyHit");  // Toca a animação de hit se o inimigo ainda não foi destruído
-                }
-            
-                this.hitCooldown = false;
-            }, [], this);
-            
+        const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
+        icebullet.setScale(1).setActive(true).setVisible(true);
+    
+        switch (this.currentDirection) {
+            case 'left':
+                bulletX -= offset;
+                velocityX = -400;
+                icebullet.angle = 180;
+                break;
+            case 'right':
+                bulletX += offset;
+                velocityX = 400;
+                icebullet.angle = 0;
+                break;
+            case 'up':
+                bulletY -= offset;
+                velocityY = -400;
+                icebullet.angle = -90;
+                break;
+            case 'down':
+                bulletY += offset;
+                velocityY = 400;
+                icebullet.angle = 90;
+                break;
         }
+    
+        icebullet.setPosition(bulletX, bulletY);
+        icebullet.setVelocity(velocityX, velocityY);
+        icebullet.anims.play("Ataque");
+    
+        this.time.addEvent({
+            delay: 500,
+            callback: () => {
+                this.canShootIce = true;
+            },
+            callbackScope: this
+        });
+        this.physics.add.overlap(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
+    }
+    
+    
+
+    bulletHitEnemy(icebullet, internetExplorer) {
+        if (this.hitCooldown) return; // Ignora o hit se estiver em cooldown
+    
+        this.hitCooldown = true; // Ativa o cooldown para evitar hits múltiplos rapidamente
+    
+        this.enemyHits -= 1; // Diminui uma vida do inimigo a cada acerto
+        console.log('Vidas restantes do Inimigo:', this.enemyHits); // Log para depuração
+    
+        if (this.enemyHits <= 0) {
+            internetExplorer.destroy(); // Destrói o inimigo se ele não tiver mais vidas
+            this.isEnemyDestroyed = true; // Sinaliza que o inimigo foi destruído
+            console.log('Inimigo destruído');
+        } else {
+            icebullet.anims.play('EnemyHit'); // Toca a animação de hit
+        }
+    
+        // Configura um evento temporizado para remover o cooldown
+        this.time.addEvent({
+            delay: 1000, // 1 segundo de cooldown
+            callback: () => {
+                this.hitCooldown = false; // Desativa o cooldown
+            },
+            callbackScope: this
+        });
+    
+        // Adiciona um delay antes de destruir a bala
+        this.time.delayedCall(500, () => {
+            icebullet.destroy();  // Destrói a bala após um delay de 500 ms
+        });
     }
     
     
     
     
+
+
 }

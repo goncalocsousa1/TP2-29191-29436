@@ -9,6 +9,8 @@ export default class MainScene extends Phaser.Scene {
         this.isEnemyDestroyed = false;
         this.hitCooldown = false;
         this.currentDirection;
+        this.playerHealth = 5; // saúde inicial do jogador
+
     }
 
     preload() {
@@ -48,11 +50,13 @@ export default class MainScene extends Phaser.Scene {
         this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
 
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
-        this.fullHealthHeart = this.add.image(70, 25, 'full_health_heart').setScale(2);
-        this.halfHealthHeart = this.add.image(100, 25, 'full_health_heart').setScale(2);
-        this.halfHealthHeart = this.add.image(130, 25, 'full_health_heart').setScale(2);
-        this.halfHealthHeart = this.add.image(160, 25, 'half_health_heart').setScale(2);
-        this.halfHealthHeart = this.add.image(190, 25, 'empty_health_heart').setScale(2);
+        this.hearts = [];
+        for (let i = 0; i < 5; i++) {
+            let xPosition = 70 + i * 30;
+            let heart = this.add.image(xPosition, 25, 'full_health_heart').setScale(2);
+            this.hearts.push(heart);
+        }
+
 
         this.internetExplorer = this.physics.add.sprite(250, 250, 'internet_explorer').setScale(0.20);
         this.internetExplorer.setCircle(32);
@@ -149,6 +153,11 @@ export default class MainScene extends Phaser.Scene {
 
         // Colisão entre balas e inimigos
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
+
+        this.physics.add.overlap(this.player, this.cacodaemon, this.handlePlayerDamage, null, this);
+
+       
+
     }
 
     update() {
@@ -263,7 +272,7 @@ export default class MainScene extends Phaser.Scene {
         );
         const minDistance = playerRadius + enemyRadius;
     
-        if (enemyVelocity.length() > minDistance) {
+        
             enemyVelocity.normalize();
             enemyVelocity.scale(speed);
             enemy.x += enemyVelocity.x;
@@ -282,11 +291,65 @@ export default class MainScene extends Phaser.Scene {
             } else {
                 enemy.setFlipY(false);
             }
-        } else {
-            enemy.anims.stop();
+        
+    }
+    handlePlayerDamage(player, enemy) {
+        this.applyDamageToPlayer(0.5);
+    }
+    updateHealthDisplay() {
+        let fullHearts = Math.floor(this.playerHealth);
+        let halfHeart = (this.playerHealth % 1 !== 0);
+        this.hearts.forEach((heart, index) => {
+            if (index < fullHearts) {
+                heart.setTexture('full_health_heart');
+            } else if (index === fullHearts && halfHeart) {
+                heart.setTexture('half_health_heart');
+            } else {
+                heart.setTexture('empty_health_heart');
+            }
+        });
+    }
+    
+    applyDamageToPlayer(damage) {
+        if (!this.hitCooldown) {
+            this.playerHealth -= damage;
+            this.hitCooldown = true;
+            this.time.addEvent({
+                delay: 1000,
+                callback: () => { this.hitCooldown = false; },
+                callbackScope: this
+            });
+            this.updateHealthDisplay();
+            if (this.playerHealth <= 0) {
+                this.gameOver();
+            }
         }
     }
     
+    gameOver() {
+        this.physics.pause();  // Pausa toda a física
+        this.anims.pauseAll(); // Pausa todas as animações
+    
+        this.createText();
+    
+        // Desativar todos os controles do jogador
+        this.input.keyboard.removeAllKeys(true);
+    
+        this.cacodaemon.setVelocity(0, 0);
+        this.internetExplorer.setVelocity(0, 0);
+        this.cacodaemon.anims.stop();
+        this.internetExplorer.anims.stop();
+    }
+    
+    
+    
+    createText() {
+        this.gameOverText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '404 Life Not Found', {
+            fontFamily: 'Orbitron',
+            fontSize: '32px',
+            fill: '#ff0000'
+        }).setOrigin(0.5);
+    }
     
 
     fireBullet() {

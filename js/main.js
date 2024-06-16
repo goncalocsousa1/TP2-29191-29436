@@ -1,12 +1,13 @@
+import FirstLeftScene from "./FirstLeftScene.js";
 import MainScene from "./MainScene.js";
 
 const config = {
-    width: 500,     //950
-    height: 425,    //530
+    width: 950,     //950
+    height: 530,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene: [MainScene],
+    scene: [MainScene, FirstLeftScene],
     scale: {
         zoom:2,
     },

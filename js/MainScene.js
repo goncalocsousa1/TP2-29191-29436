@@ -27,6 +27,10 @@ export default class MainScene extends Phaser.Scene {
         this.load.image('empty_health_heart', 'assets/images/HUD/empty_health_heart.png');
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
         this.load.image('internet_explorer', 'assets/images/Enemies/internetExplorer.png');
+        this.load.spritesheet('cacodaemon', 'assets/images/Enemies/Cacodaemon.png', {
+            frameWidth: 64, 
+            frameHeight: 64  
+        });
     }
    
     create() {
@@ -54,6 +58,8 @@ export default class MainScene extends Phaser.Scene {
         //this.internetExplorer.lives = 3; 
         console.log('Vidas do Inimigo na criação:', this.enemyHits);
 
+        this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
+        this.cacodaemon.setCircle(32);
 
 
 
@@ -97,6 +103,13 @@ export default class MainScene extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'cacodaemonAnim',
+            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 0, end: 5 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         this.inputKeys = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -117,7 +130,8 @@ export default class MainScene extends Phaser.Scene {
             defaultKey: 'ice',
             runChildUpdate: true 
         });
-        
+        //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
+
         // Colisão entre balas e inimigos
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
     }
@@ -201,11 +215,16 @@ export default class MainScene extends Phaser.Scene {
         }
 
         this.graphics.clear();
+        this.updateEnemy(this.cacodaemon, 0.50, 23, 32, 'cacodaemonAnim');  // Usando a animação correta
+
+
 
         // Redesenha as hitboxes na posição atual dos sprites
         this.graphics.strokeCircle(this.player.x, this.player.y, playerRadius);
         this.graphics.strokeCircle(this.internetExplorer.x, this.internetExplorer.y, enemyRadius);
+        this.graphics.strokeCircle(this.cacodaemon.x, this.cacodaemon.y, 32); // Assuming the radius for 'cacodaemon'
 
+        
         if (isMoving) {
             playerVelocity.normalize();
             playerVelocity.scale(speed);
@@ -222,10 +241,43 @@ export default class MainScene extends Phaser.Scene {
         
     }
 
+    updateEnemy(enemy, speed, playerRadius, enemyRadius, animKey) {
+        let enemyVelocity = new Phaser.Math.Vector2(
+            this.player.x - enemy.x,
+            this.player.y - enemy.y
+        );
+        const minDistance = playerRadius + enemyRadius;
+    
+        if (enemyVelocity.length() > minDistance) {
+            enemyVelocity.normalize();
+            enemyVelocity.scale(speed);
+            enemy.x += enemyVelocity.x;
+            enemy.y += enemyVelocity.y;
+            enemy.anims.play(animKey, true);
+    
+            // Calcula o ângulo correto de rotação em graus
+            let angle = Phaser.Math.RadToDeg(Math.atan2(enemyVelocity.y, enemyVelocity.x));
+    
+            // Ajusta o ângulo do sprite para olhar na direção do movimento
+            enemy.setAngle(angle);
+    
+            // Opcional: ajuste para inverter o sprite se estiver se movendo para esquerda e o sprite só olhar para a direita
+            if (enemyVelocity.x < 0) {
+                enemy.setFlipY(true);  // Inverte verticalmente se o sprite só estiver desenhado para olhar para a direita
+            } else {
+                enemy.setFlipY(false);
+            }
+        } else {
+            enemy.anims.stop();
+        }
+    }
+    
+    
+
     fireBullet() {
         if (!this.canShootIce) return;
         this.canShootIce = false;
-    
+        
         let bulletX = this.player.x;
         let bulletY = this.player.y;
         const offset = 20;  // Ajuste de posição
@@ -234,7 +286,8 @@ export default class MainScene extends Phaser.Scene {
     
         const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
         icebullet.setScale(1).setActive(true).setVisible(true);
-    
+        icebullet.setCollideWorldBounds(true);
+
         switch (this.currentDirection) {
             case 'left':
                 bulletX -= offset;

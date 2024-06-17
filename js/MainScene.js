@@ -1,6 +1,5 @@
 export default class MainScene extends Phaser.Scene {
 
-   
     constructor() {
         super('MainScene');
         this.bullets;
@@ -10,18 +9,25 @@ export default class MainScene extends Phaser.Scene {
         this.hitCooldown = false;
         this.currentDirection;
         this.playerHealth = 5; // saúde inicial do jogador
-
+        this.dialogueSceneKey = 'DialogueScene'; // Key for the DialogueScene
+        this.internetExplorerDialogue = [
+            "C:\InternetExplorer> Hello, I'm Internet Explorer.",
+            "I'm here to stop you from exploring further!",
+            "Prepare to face my Internet Powers!"
+        ];
+        this.dialogueTriggered = false;
+    
     }
-
+    
     preload() {
         console.log("preload");
         //mapa
         this.load.image('tiles', 'assets/images/tileset.png');
         this.load.tilemapTiledJSON('map', 'assets/maps/map1.json');
-
+    
         //player
         this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
-
+    
         this.load.spritesheet('ice', 'assets/images/Attacks/Ice.png', { frameWidth: 192, frameHeight: 192 });
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', { frameWidth: 96, frameHeight: 96 });
         this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
@@ -35,7 +41,7 @@ export default class MainScene extends Phaser.Scene {
         });
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', {frameWidth: 64, frameHeight: 64});
     }
-   
+    
     create() {
         console.log("create");
         const map = this.make.tilemap({ key: 'map' });
@@ -44,11 +50,11 @@ export default class MainScene extends Phaser.Scene {
         
         // Create the player with a circular hitbox
         const playerRadius = 23; // Ajuste o raio conforme necessário
-
+    
         this.player = this.physics.add.sprite(475, 265, 'nerd').setScale(0.75);
         this.player.setCircle(playerRadius);  // Definindo a forma de colisão como um círculo
         this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
-
+    
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
         this.hearts = [];
         for (let i = 0; i < 5; i++) {
@@ -56,16 +62,16 @@ export default class MainScene extends Phaser.Scene {
             let heart = this.add.image(xPosition, 25, 'full_health_heart').setScale(2);
             this.hearts.push(heart);
         }
-
-
+    
+    
         this.internetExplorer = this.physics.add.sprite(250, 250, 'internet_explorer').setScale(0.20);
         this.internetExplorer.setCircle(32);
         //this.internetExplorer.lives = 3; 
         console.log('Vidas do Inimigo na criação:', this.enemyHits);
-
+    
         this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
         this.cacodaemon.setCircle(32);
-
+    
         this.portal1 = this.add.sprite(20, 265, 'portal').setScale(1.5);
         this.anims.create({
             key: 'portal-idle',
@@ -74,14 +80,14 @@ export default class MainScene extends Phaser.Scene {
             repeat: -1
         })
         this.portal1.anims.play('portal-idle', true);
-
+    
         this.physics.world.enable(this.portal1);
         this.portal1.body.setCircle(14);
         this.physics.add.overlap(this.player, this.portal1, this.enterPortal, null, this);
-
+    
         this.portal2 = this.add.sprite(930, 265, 'portal').setScale(1.5);
         this.portal2.anims.play('portal-idle', true);
-
+    
         this.anims.create({
             key: 'andar-direita-animation',
             frames: this.anims.generateFrameNumbers('nerd', { frames: [6, 7, 8, 7] }), // Assuming the frames for walking right are 0 to 3
@@ -94,21 +100,21 @@ export default class MainScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'andar-frente-animation',
             frames: this.anims.generateFrameNumbers('nerd', { frames: [9, 10, 11, 10] }), // Assuming the frames for walking down are 8 to 11
             frameRate: 8,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'andar-tras-animation',
             frames: this.anims.generateFrameNumbers('nerd', { frames: [0, 1, 2, 1] }), // Assuming the frames for walking up are 12 to 15
             frameRate: 8,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'Ataque',
             frames: this.anims.generateFrameNumbers('ice', { start: 0, end: 12 }),
@@ -121,14 +127,14 @@ export default class MainScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'cacodaemonAnim',
             frames: this.anims.generateFrameNumbers('cacodaemon', { start: 0, end: 5 }),
             frameRate: 8,
             repeat: -1
         });
-
+    
         this.inputKeys = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -140,31 +146,31 @@ export default class MainScene extends Phaser.Scene {
             rightArrow: Phaser.Input.Keyboard.KeyCodes.RIGHT,
             space: Phaser.Input.Keyboard.KeyCodes.SPACE
         });
-
+    
         // Criação dos gráficos para as hitboxes
         this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0x00ff00 } });
-
+    
         // Criação do grupo de balas
         this.bullets = this.physics.add.group({
             defaultKey: 'ice',
             runChildUpdate: true 
         });
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
-
+    
         // Colisão entre balas e inimigos
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
-
+    
         this.physics.add.overlap(this.player, this.cacodaemon, this.handlePlayerDamage, null, this);
-
+    
        
-
+        this.physics.add.overlap(this.player, this.internetExplorer, this.interactWithInternetExplorer, null, this);
     }
-
+    
     update() {
         const speed = 150;
         let playerVelocity = new Phaser.Math.Vector2();
         let isMoving = false;
-
+    
         // Check for combined key presses first to handle diagonal movement
         if (this.inputKeys.up.isDown && (this.inputKeys.right.isDown || this.inputKeys.left.isDown)) {
             playerVelocity.y = -1;
@@ -178,7 +184,7 @@ export default class MainScene extends Phaser.Scene {
             isMoving = true;
             this.currentDirection = 'down';
         }
-
+    
         // Handle single key presses
         if (this.inputKeys.left.isDown || this.inputKeys.leftArrow.isDown) {
             playerVelocity.x = -1;
@@ -212,42 +218,42 @@ export default class MainScene extends Phaser.Scene {
             }
             isMoving = true;
         }
-
+    
         if (!isMoving) {
             this.player.anims.stop();
         }
-
+    
         playerVelocity.normalize();
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
-
+    
         const enemySpeed = 0.15; // Constant speed of the enemy
         let enemyVelocity = new Phaser.Math.Vector2(
             this.player.x - this.internetExplorer.x,
             this.player.y - this.internetExplorer.y
         );
-
+    
         const playerRadius = 23; // Radius of the player's hitbox   
         const enemyRadius = 32; // Radius of the enemy's hitbox
         const minDistance = playerRadius + enemyRadius; // Minimum distance before stopping the enemy
-
+    
         if (enemyVelocity.length() > minDistance) { // Ensure there is a distance to be covered
             enemyVelocity.normalize(); // Normalize the vector to have length 1
             enemyVelocity.scale(enemySpeed); // Adjust to the enemy's speed
             this.internetExplorer.x += enemyVelocity.x; // Apply the movement
             this.internetExplorer.y += enemyVelocity.y;
         }
-
+    
         this.graphics.clear();
         this.updateEnemy(this.cacodaemon, 0.50, 23, 32, 'cacodaemonAnim');  // Usando a animação correta
-
-
-
+    
+    
+    
         // Redesenha as hitboxes na posição atual dos sprites
         this.graphics.strokeCircle(this.player.x, this.player.y, playerRadius);
         this.graphics.strokeCircle(this.internetExplorer.x, this.internetExplorer.y, enemyRadius);
         this.graphics.strokeCircle(this.cacodaemon.x, this.cacodaemon.y, 32); // Assuming the radius for 'cacodaemon'
-
+    
         
         if (isMoving) {
             playerVelocity.normalize();
@@ -256,7 +262,7 @@ export default class MainScene extends Phaser.Scene {
         } else {
             this.player.setVelocity(0, 0);
         }
-
+    
         
         // Verifica se a tecla de espaço foi pressionada
         if (Phaser.Input.Keyboard.JustDown(this.inputKeys.space)) {
@@ -264,7 +270,7 @@ export default class MainScene extends Phaser.Scene {
         }
         
     }
-
+    
     updateEnemy(enemy, speed, playerRadius, enemyRadius, animKey) {
         let enemyVelocity = new Phaser.Math.Vector2(
             this.player.x - enemy.x,
@@ -351,7 +357,7 @@ export default class MainScene extends Phaser.Scene {
         }).setOrigin(0.5);
     }
     
-
+    
     fireBullet() {
         if (!this.canShootIce) return;
         this.canShootIce = false;
@@ -365,7 +371,7 @@ export default class MainScene extends Phaser.Scene {
         const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
         icebullet.setScale(1).setActive(true).setVisible(true);
         icebullet.setCollideWorldBounds(true);
-
+    
         switch (this.currentDirection) {
             case 'left':
                 bulletX -= offset;
@@ -404,7 +410,7 @@ export default class MainScene extends Phaser.Scene {
     }
     
     
-
+    
     bulletHitEnemy(icebullet, internetExplorer) {
         if (this.hitCooldown) return; // Ignora o hit se estiver em cooldown
     
@@ -439,5 +445,18 @@ export default class MainScene extends Phaser.Scene {
     enterPortal(player, portal) {
         this.scene.start('FirstLeftScene');
     }
+    
+    interactWithInternetExplorer(player, internetExplorer) {
+        if (!this.dialogueTriggered) { // Check if dialogue has already been triggered
+            this.dialogueTriggered = true; // Set flag to true
+            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.internetExplorerDialogue });
+            this.scene.pause();
 
+            // Resume the game when dialogue scene is stopped
+            this.events.on('resume', () => {
+                this.scene.resume();
+            });
+        }
+    }
+    
 }

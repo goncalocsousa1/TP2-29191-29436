@@ -1,3 +1,4 @@
+import DialogueScene from "./DialogueScene.js";
 import FirstLeftScene from "./FirstLeftScene.js";
 import MainScene from "./MainScene.js";
 import MenuScene from "./MenuScene.js";
@@ -8,7 +9,7 @@ const config = {
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene: [MenuScene, MainScene, FirstLeftScene],
+    scene: [MenuScene, MainScene, FirstLeftScene, DialogueScene],
     scale: {
         zoom:2,
     },

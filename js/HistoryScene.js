@@ -26,13 +26,26 @@ export default class HistoryScene extends Phaser.Scene {
         });
 
         let i = 0;
+        let enterPressed = false;
+
+        // Keyboard listener for Enter key
+        this.input.keyboard.on('keydown-ENTER', () => {
+            enterPressed = true;
+        });
+
         const timer = this.time.addEvent({
             delay: 50,
             callback: () => {
-                typingText.text += storyText[i++];
-                if (i === storyText.length) {
+                if (enterPressed) {
+                    typingText.text = storyText;
                     timer.remove();
                     this.autoTypeCommand(typingText, 'cd ..', prompt);
+                } else {
+                    typingText.text += storyText[i++];
+                    if (i === storyText.length) {
+                        timer.remove();
+                        this.autoTypeCommand(typingText, 'cd ..', prompt);
+                    }
                 }
             },
             loop: true
@@ -41,15 +54,30 @@ export default class HistoryScene extends Phaser.Scene {
 
     autoTypeCommand(textObject, command, prompt) {
         let i = 0;
+        let enterPressed = false;
+
         textObject.text += prompt;
+
+        // Keyboard listener for Enter key
+        this.input.keyboard.on('keydown-ENTER', () => {
+            enterPressed = true;
+        });
+
         const commandTimer = this.time.addEvent({
             delay: 100,
             callback: () => {
-                textObject.text += command[i++];
-                if (i === command.length) {
+                if (enterPressed) {
+                    textObject.text += command;
                     commandTimer.remove();
                     this.addBlinkingCursor(textObject.x + textObject.width, textObject.y);
                     this.enableEnterToProceed();
+                } else {
+                    textObject.text += command[i++];
+                    if (i === command.length) {
+                        commandTimer.remove();
+                        this.addBlinkingCursor(textObject.x + textObject.width, textObject.y);
+                        this.enableEnterToProceed();
+                    }
                 }
             },
             loop: true
@@ -74,4 +102,4 @@ export default class HistoryScene extends Phaser.Scene {
             this.scene.start('MenuScene');
         });
     }
-}   
+}

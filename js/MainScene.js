@@ -28,8 +28,8 @@ export default class MainScene extends Phaser.Scene {
         console.log("preload");
         
         //mapa
-        this.load.image('tiles', 'http://127.0.0.1:5500/TP2-29191-29436/assets/images/motherboard.png');
-        this.load.tilemapTiledJSON('motherboard', 'http://127.0.0.1:5500/TP2-29191-29436/assets/maps/motherboard.json');
+        this.load.image('tiles', 'assets/images/motherboard.png');
+        this.load.tilemapTiledJSON('motherboard', 'assets/maps/motherboard.json');
       
         //player
         //this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
@@ -108,7 +108,8 @@ export default class MainScene extends Phaser.Scene {
         this.portal1.anims.play('portal-idle', true);
     
         this.physics.world.enable(this.portal1);
-        this.portal1.body.setCircle(14);
+        this.portal1.body.setSize(20, 50);
+        
         this.physics.add.overlap(this.player, this.portal1, this.enterPortal, null, this);
     
         this.portal2 = this.add.sprite(870, 265, 'portal').setScale(1.5);

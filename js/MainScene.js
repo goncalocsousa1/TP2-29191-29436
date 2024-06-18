@@ -16,17 +16,21 @@ export default class MainScene extends Phaser.Scene {
             "Prepare to face my Internet Powers!"
         ];
         this.dialogueTriggered = false;
-    
+        let walls; // Reference to the wall layer
     }
     
+
+  
+
     preload() {
         console.log("preload");
+        
         //mapa
-        this.load.image('tiles', 'assets/images/tileset.png');
-        this.load.tilemapTiledJSON('map', 'assets/maps/map1.json');
-    
+        this.load.image('tiles', 'http://127.0.0.1:5500/TP2-29191-29436/assets/images/motherboard.png');
+        this.load.tilemapTiledJSON('motherboard', 'http://127.0.0.1:5500/TP2-29191-29436/assets/maps/motherboard.json');
+      
         //player
-        this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
+        //this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
     
         this.load.spritesheet('ice', 'assets/images/Attacks/Ice.png', { frameWidth: 192, frameHeight: 192 });
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', { frameWidth: 96, frameHeight: 96 });
@@ -43,17 +47,30 @@ export default class MainScene extends Phaser.Scene {
     }
     
     create() {
+        this.cameras.main.setZoom(0.95);
+        //this.add.image(500, 500, 'tiles')
         console.log("create");
-        const map = this.make.tilemap({ key: 'map' });
-        const tileset = map.addTilesetImage('Minifantasy_ForgottenPlainsTiles', 'tiles');
-        const layer1 = map.createLayer('Camada de Blocos 1', tileset);
+        const map = this.make.tilemap({ key: 'motherboard' });
+        const tileset = map.addTilesetImage('motherboard', 'tiles');
+        //const background = map.createLayer('background', tileset, 0 , 0);
         
+        this.walls = map.createLayer('wall', tileset, 0, 0).setScale(0.75);
+        this.walls.setCollisionByExclusion([-1]);
+        
+        const backgroundLayer = map.createLayer('ground', tileset, 0, 0).setScale(0.75);
+        //this.walls = this.physics.add.staticGroup();
+        //this.walls.create(400, 300, 'wall');
+
+      
         // Create the player with a circular hitbox
         const playerRadius = 23; // Ajuste o raio conforme necessário
     
         this.player = this.physics.add.sprite(475, 265, 'nerd').setScale(0.75);
         this.player.setCircle(playerRadius);  // Definindo a forma de colisão como um círculo
         this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
+
+        this.physics.add.collider(this.player, this.walls);
+        //this.physics.add.overlap(this.player, this.walls);
     
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
         this.hearts = [];
@@ -72,7 +89,7 @@ export default class MainScene extends Phaser.Scene {
         this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
         this.cacodaemon.setCircle(32);
     
-        this.portal1 = this.add.sprite(20, 265, 'portal').setScale(1.5);
+        this.portal1 = this.add.sprite(50, 265, 'portal').setScale(1.5);
         this.anims.create({
             key: 'portal-idle',
             frames: this.anims.generateFrameNumbers('portal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
@@ -85,9 +102,10 @@ export default class MainScene extends Phaser.Scene {
         this.portal1.body.setCircle(14);
         this.physics.add.overlap(this.player, this.portal1, this.enterPortal, null, this);
     
-        this.portal2 = this.add.sprite(930, 265, 'portal').setScale(1.5);
+        this.portal2 = this.add.sprite(870, 265, 'portal').setScale(1.5);
         this.portal2.anims.play('portal-idle', true);
-    
+        
+        
         this.anims.create({
             key: 'andar-direita-animation',
             frames: this.anims.generateFrameNumbers('nerd', { frames: [6, 7, 8, 7] }), // Assuming the frames for walking right are 0 to 3

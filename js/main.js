@@ -4,7 +4,7 @@ import MainScene from "./MainScene.js";
 import MenuScene from "./MenuScene.js";
 import HistoryScene from './HistoryScene.js'; 
 const config = {
-    width: 950,     //950
+    width: 910,     //950
     height: 530,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,
@@ -32,3 +32,4 @@ const config = {
 }
 
 new Phaser.Game(config);
+let walls; // Reference to the wall layer

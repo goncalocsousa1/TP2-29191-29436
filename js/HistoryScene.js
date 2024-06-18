@@ -74,4 +74,4 @@ export default class HistoryScene extends Phaser.Scene {
             this.scene.start('MenuScene');
         });
     }
-}
+}   

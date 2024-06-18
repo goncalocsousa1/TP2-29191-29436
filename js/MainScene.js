@@ -4,7 +4,9 @@ export default class MainScene extends Phaser.Scene {
         super('MainScene');
         this.bullets;
         this.canShootIce = true;
+        this.canShootFireball = true;
         this.enemyHits = 3;
+        this.enemyHitsCaco = 3;
         this.isEnemyDestroyed = false;
         this.hitCooldown = false;
         this.currentDirection;
@@ -33,6 +35,7 @@ export default class MainScene extends Phaser.Scene {
         //this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
     
         this.load.spritesheet('ice', 'assets/images/Attacks/Ice.png', { frameWidth: 192, frameHeight: 192 });
+        this.load.spritesheet('fireball', 'assets/images/Attacks/fireball.png', { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', { frameWidth: 96, frameHeight: 96 });
         this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
@@ -66,9 +69,15 @@ export default class MainScene extends Phaser.Scene {
         const playerRadius = 23; // Ajuste o raio conforme necessário
     
         this.player = this.physics.add.sprite(475, 265, 'nerd').setScale(0.75);
-        this.player.setCircle(playerRadius);  // Definindo a forma de colisão como um círculo
+       
         this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
 
+        this.player.body.setSize(48, 48);
+
+        // Centrando a hitbox no sprite, necessário se o sprite for redimensionado ou se as dimensões do corpo não coincidirem com as do sprite
+        this.player.body.setOffset((this.player.width - 48) / 2, (this.player.height - 48) / 2);
+
+        this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
         this.physics.add.collider(this.player, this.walls);
         //this.physics.add.overlap(this.player, this.walls);
     
@@ -82,12 +91,12 @@ export default class MainScene extends Phaser.Scene {
     
     
         this.internetExplorer = this.physics.add.sprite(250, 250, 'internet_explorer').setScale(0.20);
-        this.internetExplorer.setCircle(32);
+        
         //this.internetExplorer.lives = 3; 
         console.log('Vidas do Inimigo na criação:', this.enemyHits);
     
         this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
-        this.cacodaemon.setCircle(32);
+       
     
         this.portal1 = this.add.sprite(50, 265, 'portal').setScale(1.5);
         this.anims.create({
@@ -152,7 +161,16 @@ export default class MainScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-    
+        
+
+        this.fireballs = this.physics.add.group({
+            defaultKey: 'fireball',
+            maxSize: 100
+        });
+        this.physics.add.overlap(this.fireballs, this.internetExplorer, this.hitEnemy1, null, this);
+        this.physics.add.overlap(this.fireballs, this.cacodaemon, this.hitEnemy2, null, this);
+        
+
         this.inputKeys = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -173,15 +191,29 @@ export default class MainScene extends Phaser.Scene {
             defaultKey: 'ice',
             runChildUpdate: true 
         });
+        this.fireballs = this.physics.add.group({
+            defaultKey: 'fireball',
+            maxSize:100
+        });
+
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
     
         // Colisão entre balas e inimigos
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
     
         this.physics.add.overlap(this.player, this.cacodaemon, this.handlePlayerDamage, null, this);
-    
-       
-        this.physics.add.overlap(this.player, this.internetExplorer, this.interactWithInternetExplorer, null, this);
+        this.physics.add.overlap(this.player, this.internetExplorer, this.handlePlayerDamage, null, this);
+        
+
+        this.physics.world.createDebugGraphic();
+
+        // Visualizar a hitbox dos fireballs
+        this.fireballs.children.iterate((fireball) => {
+            this.physics.world.enableBody(fireball, Phaser.Physics.Arcade.DYNAMIC_BODY);
+            fireball.body.setCircle(15);  // Ajuste conforme necessário
+        });
+
+        //this.physics.add.overlap(this.player, this.internetExplorer, this.interactWithInternetExplorer, null, this);
     }
     
     update() {
@@ -250,27 +282,17 @@ export default class MainScene extends Phaser.Scene {
             this.player.x - this.internetExplorer.x,
             this.player.y - this.internetExplorer.y
         );
-    
-        const playerRadius = 23; // Radius of the player's hitbox   
-        const enemyRadius = 32; // Radius of the enemy's hitbox
-        const minDistance = playerRadius + enemyRadius; // Minimum distance before stopping the enemy
-    
-        if (enemyVelocity.length() > minDistance) { // Ensure there is a distance to be covered
+
+        
             enemyVelocity.normalize(); // Normalize the vector to have length 1
             enemyVelocity.scale(enemySpeed); // Adjust to the enemy's speed
             this.internetExplorer.x += enemyVelocity.x; // Apply the movement
             this.internetExplorer.y += enemyVelocity.y;
-        }
+        
     
         this.graphics.clear();
         this.updateEnemy(this.cacodaemon, 0.50, 23, 32, 'cacodaemonAnim');  // Usando a animação correta
-    
-    
-    
-        // Redesenha as hitboxes na posição atual dos sprites
-        this.graphics.strokeCircle(this.player.x, this.player.y, playerRadius);
-        this.graphics.strokeCircle(this.internetExplorer.x, this.internetExplorer.y, enemyRadius);
-        this.graphics.strokeCircle(this.cacodaemon.x, this.cacodaemon.y, 32); // Assuming the radius for 'cacodaemon'
+
     
         
         if (isMoving) {
@@ -317,6 +339,7 @@ export default class MainScene extends Phaser.Scene {
             }
         
     }
+
     handlePlayerDamage(player, enemy) {
         this.applyDamageToPlayer(0.5);
     }
@@ -375,7 +398,71 @@ export default class MainScene extends Phaser.Scene {
         }).setOrigin(0.5);
     }
     
+
+    shootFireball() {
+        
+        if (!this.canShootFireball) return;
+        this.canShootFireball = false;
+        
     
+        const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(1);
+        fireball.anims.play('Fireball');
+    
+        this.physics.add.overlap(fireball, this.internetExplorer, this.hitEnemy1, null, this);
+        this.physics.add.overlap(fireball, this.cacodaemon, this.hitEnemy2, null, this);
+        let velocityX = 0;
+        let velocityY = 0;
+        switch (this.currentDirection) {
+            case 'left':
+                velocityX = -300;
+                fireball.angle = 180;
+                break;
+            case 'right':
+                velocityX = 300;
+                fireball.angle = 0;
+                break;
+            case 'up':
+                velocityY = -300;
+                fireball.angle = -90; 
+                break;
+            case 'down':
+                velocityY = 300;
+                fireball.angle = 90;
+                break;
+        }
+        fireball.setVelocity(velocityX, velocityY);
+            this.time.addEvent({
+                delay: this.fireballCooldownTime,
+                callback: () => {
+                    this.canShootFireball = true;
+                },
+                callbackScope: this
+            });
+        }
+        hitEnemy1(attack, enemy){
+            this.time.delayedCall(50, () => {  
+                attack.destroy();
+            })
+            
+            this.enemyHits -=1;
+            console.log("vidas =" + this.enemyHits);
+            if(this.enemyHits <=0){
+                this.internetExplorer.destroy();
+                console.log("MORREU");
+            }
+        }
+       /* hitEnemy2(attack, enemy){
+            this.time.delayedCall(50, () => {  
+                attack.destroy();
+            })
+            
+            this.enemyHitsCaco -=1;
+            console.log("vidas cacao =" + this.enemyHitsCaco);
+            if(this.enemyHitsCaco <=0){
+                this.cacodaemon.destroy();
+                console.log("MORREU cacao");
+            }
+        }*/
     fireBullet() {
         if (!this.canShootIce) return;
         this.canShootIce = false;
@@ -388,8 +475,11 @@ export default class MainScene extends Phaser.Scene {
     
         const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
         icebullet.setScale(1).setActive(true).setVisible(true);
-        icebullet.setCollideWorldBounds(true);
-    
+        
+        const hitboxSize = 30;  // Define o tamanho da hitbox, ajuste conforme necessário
+        icebullet.body.setSize(hitboxSize, hitboxSize);
+        icebullet.body.setOffset((icebullet.width - hitboxSize) / 2, (icebullet.height - hitboxSize) / 2);
+
         switch (this.currentDirection) {
             case 'left':
                 bulletX -= offset;
@@ -425,9 +515,10 @@ export default class MainScene extends Phaser.Scene {
             callbackScope: this
         });
         this.physics.add.overlap(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
+        this.physics.add.overlap(icebullet, this.cacodaemon, this.bulletHitEnemyCaco, null, this);
     }
     
-    
+  
     
     bulletHitEnemy(icebullet, internetExplorer) {
         if (this.hitCooldown) return; // Ignora o hit se estiver em cooldown

@@ -33,3 +33,4 @@ const config = {
 
 new Phaser.Game(config);
 let walls; // Reference to the wall layer
+

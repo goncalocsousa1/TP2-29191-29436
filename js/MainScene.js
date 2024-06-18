@@ -378,7 +378,7 @@ export default class MainScene extends Phaser.Scene {
         this.physics.pause();  // Pausa toda a física
         this.anims.pauseAll(); // Pausa todas as animações
     
-        this.createText();
+        this.gameOver();
     
         // Desativar todos os controles do jogador
         this.input.keyboard.removeAllKeys(true);
@@ -391,12 +391,8 @@ export default class MainScene extends Phaser.Scene {
     
     
     
-    createText() {
-        this.gameOverText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '404 Life Not Found', {
-            fontFamily: 'Orbitron',
-            fontSize: '32px',
-            fill: '#ff0000'
-        }).setOrigin(0.5);
+    gameOver() {
+        this.scene.start('LoseScene');
     }
     
 

@@ -28,13 +28,21 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
         this.load.image('internet_explorer', 'assets/images/Enemies/internetExplorer.png');
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', {frameWidth: 64, frameHeight: 64});
+        
     }
     
     create() {
         //console.log("create");
-        const map = this.make.tilemap({ key: 'map' });
-        const tileset = map.addTilesetImage('Minifantasy_ForgottenPlainsTiles', 'tiles');
-        const layer1 = map.createLayer('Camada de Blocos 1', tileset);
+        this.cameras.main.setZoom(0.95);
+        
+        const map = this.make.tilemap({ key: 'motherboard' });
+        const tileset = map.addTilesetImage('motherboard', 'tiles');
+        //const background = map.createLayer('background', tileset, 0 , 0);
+        
+        this.walls = map.createLayer('wall', tileset, 0, 0).setScale(0.75);
+        this.walls.setCollisionByExclusion([-1]);
+        
+        const backgroundLayer = map.createLayer('ground', tileset, 0, 0).setScale(0.75);
         
         // Create the player with a circular hitbox
         const playerRadius = 23; // Ajuste o raio conforme necessário

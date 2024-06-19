@@ -46,6 +46,10 @@ export default class MainScene extends Phaser.Scene {
             frameWidth: 64, 
             frameHeight: 64  
         });
+        this.load.spritesheet('oldman', 'assets/images/Characters/48x48.png', {
+            frameWidth: 48, 
+            frameHeight: 48  
+        });
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', {frameWidth: 64, frameHeight: 64});
     }
     
@@ -96,8 +100,18 @@ export default class MainScene extends Phaser.Scene {
         console.log('Vidas do Inimigo na criação:', this.enemyHits);
     
         this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
-       
-    
+
+        this.oldman = this.physics.add.sprite(450, 100, 'oldman').setScale(1);
+        
+
+        
+        this.anims.create({
+            key: 'oldmanidle',
+            frames: this.anims.generateFrameNumbers('oldman', { start: 1, end: 4 }), 
+            frameRate: 8,
+            repeat: -1 
+        });
+        this.oldman.anims.play('oldmanidle', true);
         this.portal1 = this.add.sprite(50, 265, 'portal').setScale(1.5);
         this.anims.create({
             key: 'portal-idle',
@@ -163,7 +177,13 @@ export default class MainScene extends Phaser.Scene {
             repeat: -1
         });
         
-
+        this.anims.create({
+            key: 'cacodaemonDeath',
+            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 19, end: 24 }), 
+            frameRate: 8,
+            repeat: 0 // A animação não se repete
+        });
+        
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
             maxSize: 100
@@ -192,10 +212,7 @@ export default class MainScene extends Phaser.Scene {
             defaultKey: 'ice',
             runChildUpdate: true 
         });
-        this.fireballs = this.physics.add.group({
-            defaultKey: 'fireball',
-            maxSize:100
-        });
+        
 
         //this.physics.add.collider(this.bullets, this.internetExplorer, this.bulletHitEnemy, null, this);
     
@@ -208,11 +225,7 @@ export default class MainScene extends Phaser.Scene {
 
         this.physics.world.createDebugGraphic();
 
-        // Visualizar a hitbox dos fireballs
-        this.fireballs.children.iterate((fireball) => {
-            this.physics.world.enableBody(fireball, Phaser.Physics.Arcade.DYNAMIC_BODY);
-            fireball.body.setCircle(15);  // Ajuste conforme necessário
-        });
+        
 
         //this.physics.add.overlap(this.player, this.internetExplorer, this.interactWithInternetExplorer, null, this);
     }
@@ -342,8 +355,11 @@ export default class MainScene extends Phaser.Scene {
     }
 
     handlePlayerDamage(player, enemy) {
+        
         this.applyDamageToPlayer(0.5);
     }
+
+    
     updateHealthDisplay() {
         let fullHearts = Math.floor(this.playerHealth);
         let halfHeart = (this.playerHealth % 1 !== 0);
@@ -460,62 +476,62 @@ export default class MainScene extends Phaser.Scene {
                 console.log("MORREU cacao");
             }
         }*/
-    fireBullet() {
-        if (!this.canShootIce) return;
-        this.canShootIce = false;
-        
-        let bulletX = this.player.x;
-        let bulletY = this.player.y;
-        const offset = 20;  // Ajuste de posição
-        let velocityX = 0;
-        let velocityY = 0;
-    
-        const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
-        icebullet.setScale(1).setActive(true).setVisible(true);
-        
-        const hitboxSize = 30;  // Define o tamanho da hitbox, ajuste conforme necessário
-        icebullet.body.setSize(hitboxSize, hitboxSize);
-        icebullet.body.setOffset((icebullet.width - hitboxSize) / 2, (icebullet.height - hitboxSize) / 2);
+            fireBullet() {
+                if (!this.canShootIce) return;
+                this.canShootIce = false;
+            
+                let bulletX = this.player.x;
+                let bulletY = this.player.y;
+                const offset = 20;  // Ajuste de posição
+                let velocityX = 0;
+                let velocityY = 0;
+            
+                const icebullet = this.bullets.get(bulletX, bulletY, 'ice');
+                icebullet.setScale(1).setActive(true).setVisible(true);
+                
+                const hitboxSize = 30;  // Define o tamanho da hitbox, ajuste conforme necessário
+                icebullet.body.setSize(hitboxSize, hitboxSize);
+                icebullet.body.setOffset((icebullet.width - hitboxSize) / 2, (icebullet.height - hitboxSize) / 2);
+            
+                switch (this.currentDirection) {
+                    case 'left':
+                        bulletX -= offset;
+                        velocityX = -400;
+                        icebullet.angle = 180;
+                        break;
+                    case 'right':
+                        bulletX += offset;
+                        velocityX = 400;
+                        icebullet.angle = 0;
+                        break;
+                    case 'up':
+                        bulletY -= offset;
+                        velocityY = -400;
+                        icebullet.angle = -90;
+                        break;
+                    case 'down':
+                        bulletY += offset;
+                        velocityY = 400;
+                        icebullet.angle = 90;
+                        break;
+                }
+            
+                icebullet.setPosition(bulletX, bulletY);
+                icebullet.setVelocity(velocityX, velocityY);
+                icebullet.anims.play("Ataque");
+            
+                this.time.addEvent({
+                    delay: 500,
+                    callback: () => {
+                        this.canShootIce = true;
+                    },
+                    callbackScope: this
+                });
+            
+                this.physics.add.overlap(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
+                this.physics.add.overlap(icebullet, this.cacodaemon, this.bulletHitEnemyCaco, null, this);
+            }
 
-        switch (this.currentDirection) {
-            case 'left':
-                bulletX -= offset;
-                velocityX = -400;
-                icebullet.angle = 180;
-                break;
-            case 'right':
-                bulletX += offset;
-                velocityX = 400;
-                icebullet.angle = 0;
-                break;
-            case 'up':
-                bulletY -= offset;
-                velocityY = -400;
-                icebullet.angle = -90;
-                break;
-            case 'down':
-                bulletY += offset;
-                velocityY = 400;
-                icebullet.angle = 90;
-                break;
-        }
-    
-        icebullet.setPosition(bulletX, bulletY);
-        icebullet.setVelocity(velocityX, velocityY);
-        icebullet.anims.play("Ataque");
-    
-        this.time.addEvent({
-            delay: 500,
-            callback: () => {
-                this.canShootIce = true;
-            },
-            callbackScope: this
-        });
-        this.physics.add.overlap(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
-        this.physics.add.overlap(icebullet, this.cacodaemon, this.bulletHitEnemyCaco, null, this);
-    }
-    
-  
     
     bulletHitEnemy(icebullet, internetExplorer) {
         if (this.hitCooldown) return; // Ignora o hit se estiver em cooldown
@@ -547,7 +563,40 @@ export default class MainScene extends Phaser.Scene {
             icebullet.destroy();  // Destrói a bala após um delay de 500 ms
         });
     }
+    bulletHitEnemyCaco(icebullet, cacodaemon) {
+        if (this.hitCooldown) return; // Ignora o hit se estiver em cooldown
     
+        this.hitCooldown = true; // Ativa o cooldown para evitar hits múltiplos rapidamente
+    
+        this.enemyHitsCaco -= 1; // Diminui uma vida do inimigo a cada acerto
+        console.log('Vidas restantes do Cacodaemon:', this.enemyHitsCaco); // Log para depuração
+    
+        if (this.enemyHitsCaco <= 0) {
+            cacodaemon.anims.play('cacodaemonDeath');
+            cacodaemon.setActive(false).setVisible(false); // Desativa o inimigo
+            cacodaemon.body.enable = false; // Desativa a física do inimigo
+            this.isEnemyDestroyed = true; // Sinaliza que o inimigo foi destruído
+            console.log('Cacodaemon destruído');
+        } else {
+            icebullet.anims.play('EnemyHit'); // Toca a animação de hit
+        }
+    
+        // Configura um evento temporizado para remover o cooldown
+        this.time.addEvent({
+            delay: 1000, // 1 segundo de cooldown
+            callback: () => {
+                this.hitCooldown = false; // Desativa o cooldown
+            },
+            callbackScope: this
+        });
+    
+        // Adiciona um delay antes de destruir a bala
+        this.time.delayedCall(500, () => {
+            icebullet.destroy();  // Destrói a bala após um delay de 500 ms
+        });
+    }
+    
+
     enterPortal(player, portal) {
         this.scene.start('FirstLeftScene');
     }

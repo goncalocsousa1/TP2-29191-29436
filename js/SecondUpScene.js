@@ -1,8 +1,8 @@
-export default class FirstLeftScene extends Phaser.Scene {
+export default class SecondUpScene extends Phaser.Scene {
 
    
     constructor() {
-        super('FirstLeftScene');
+        super('SecondUpScene');
         this.bullets;
         this.canShootIce = true;
         this.enemyHits = 3;

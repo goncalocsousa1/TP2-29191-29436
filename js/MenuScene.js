@@ -16,25 +16,32 @@ export default class MenuScene extends Phaser.Scene {
             .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
         // Opaque and adjusted dimensions for the title background with rounded corners
-        this.drawBackgroundBox(475, 200, 450, 70, 20, 0x201b1b);  // Added radius parameter for rounded corners
-        this.add.text(475, 200, 'Hacker Madness', {
+        this.drawBackgroundBox(475, 180, 450, 70, 20, 0x201b1b);  // Added radius parameter for rounded corners
+        this.add.text(475, 180, 'Hacker Madness', {
             font: '48px "Courier New"',
             fill: '#fff'
         }).setOrigin(0.5);
 
         // Opaque and adjusted dimensions for the 'Start Game' button background with rounded corners
-        this.drawBackgroundBox(475, 300, 250, 60, 20, 0x201b1b);  // Rounded corners
-        const startButton = this.add.text(475, 300, 'Start Game', {
+        this.drawBackgroundBox(475, 270, 250, 60, 20, 0x201b1b);  // Rounded corners
+        const startButton = this.add.text(475, 270, 'Start Game', {
             font: '32px "Courier New"',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.scene.start('MainScene'));
         
         // Opaque and adjusted dimensions for the 'History' button background with rounded corners
-        this.drawBackgroundBox(475, 400, 180, 60, 20, 0x201b1b);  // Rounded corners
-        const HistButton = this.add.text(475, 400, 'History', {
+        this.drawBackgroundBox(475, 370, 180, 60, 20, 0x201b1b);  // Rounded corners
+        const HistButton = this.add.text(475, 370, 'History', {
             font: '32px "Courier New"',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.scene.start('HistoryScene'));
+
+        // Opaque and adjusted dimensions for the 'Controls' button background with rounded corners
+        this.drawBackgroundBox(475, 470, 220, 60, 20, 0x201b1b);  // Rounded corners
+        const controlsButton = this.add.text(475, 470, 'Controls', {
+            font: '32px "Courier New"',
+            fill: '#fff'
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.scene.start('ControlsScene'));
     }
 
     drawBackgroundBox(x, y, width, height, radius, color) {

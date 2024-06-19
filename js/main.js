@@ -5,6 +5,7 @@ import MenuScene from "./MenuScene.js";
 import HistoryScene from './HistoryScene.js'; 
 import LoseScene from "./LoseScene.js";
 import SecondUpScene from "./SecondUpScene.js";
+import ControlsScene from "./ControlsScene.js";
 
 const config = {
     width: 910,     //950
@@ -12,7 +13,7 @@ const config = {
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, DialogueScene, HistoryScene, LoseScene],
+    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, DialogueScene, HistoryScene, ControlsScene, LoseScene],
     scale: {
         zoom:2,
     },

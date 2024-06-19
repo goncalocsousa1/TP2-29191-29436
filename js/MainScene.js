@@ -81,7 +81,7 @@ export default class MainScene extends Phaser.Scene {
         // Centrando a hitbox no sprite, necessário se o sprite for redimensionado ou se as dimensões do corpo não coincidirem com as do sprite
         this.player.body.setOffset((this.player.width - 48) / 2, (this.player.height - 48) / 2);
 
-        this.player.setCollideWorldBounds(true);  // Faz o sprite colidir com os limites do mundo
+        
         this.physics.add.collider(this.player, this.walls);
         //this.physics.add.overlap(this.player, this.walls);
     
@@ -200,8 +200,7 @@ export default class MainScene extends Phaser.Scene {
             upArrow: Phaser.Input.Keyboard.KeyCodes.UP,
             downArrow: Phaser.Input.Keyboard.KeyCodes.DOWN,
             leftArrow: Phaser.Input.Keyboard.KeyCodes.LEFT,
-            rightArrow: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-            space: Phaser.Input.Keyboard.KeyCodes.SPACE
+            rightArrow: Phaser.Input.Keyboard.KeyCodes.RIGHT
         });
     
         // Criação dos gráficos para as hitboxes
@@ -240,45 +239,44 @@ export default class MainScene extends Phaser.Scene {
             playerVelocity.y = -1;
             this.player.anims.play('andar-frente-animation', true);
             isMoving = true;
-            this.currentDirection = 'up';
         }
         if (this.inputKeys.down.isDown && (this.inputKeys.right.isDown || this.inputKeys.left.isDown)) {
             playerVelocity.y = 1;
             this.player.anims.play('andar-tras-animation', true);
             isMoving = true;
-            this.currentDirection = 'down';
+            
         }
     
         // Handle single key presses
-        if (this.inputKeys.left.isDown || this.inputKeys.leftArrow.isDown) {
+        if (this.inputKeys.left.isDown ) {
             playerVelocity.x = -1;
             if (!isMoving) {
                 this.player.anims.play('andar-esquerda-animation', true);
-                this.currentDirection = 'left';
+                
             }
             isMoving = true;
         }
-        if (this.inputKeys.right.isDown || this.inputKeys.rightArrow.isDown) {
+        if (this.inputKeys.right.isDown ) {
             playerVelocity.x = 1;
             if (!isMoving) {
                 this.player.anims.play('andar-direita-animation', true);
-                this.currentDirection = 'right';
+                
             }
             isMoving = true;
         }
-        if (this.inputKeys.up.isDown || this.inputKeys.upArrow.isDown) {
+        if (this.inputKeys.up.isDown ) {
             playerVelocity.y = -1;
             if (!isMoving) {
                 this.player.anims.play('andar-frente-animation', true);
-                this.currentDirection = 'up';
+                
             }
             isMoving = true;
         }
-        if (this.inputKeys.down.isDown || this.inputKeys.downArrow.isDown) {
+        if (this.inputKeys.down.isDown) {
             playerVelocity.y = 1;
             if (!isMoving) {
                 this.player.anims.play('andar-tras-animation', true);
-                this.currentDirection = 'down';
+                
             }
             isMoving = true;
         }
@@ -317,11 +315,27 @@ export default class MainScene extends Phaser.Scene {
             this.player.setVelocity(0, 0);
         }
     
-        
-        // Verifica se a tecla de espaço foi pressionada
-        if (Phaser.Input.Keyboard.JustDown(this.inputKeys.space)) {
+        if (this.inputKeys.upArrow.isDown) {
+            this.currentDirection = 'up';
             this.fireBullet();
+            
         }
+        if (this.inputKeys.downArrow.isDown) {
+            this.currentDirection = 'down';
+            this.fireBullet();
+            
+        }
+        if (this.inputKeys.leftArrow.isDown) {
+            this.currentDirection = 'left';
+            this.fireBullet();
+            
+        }
+        if (this.inputKeys.rightArrow.isDown) {
+            this.currentDirection = 'right';
+            this.fireBullet();
+            
+        }
+        
         
     }
     
@@ -421,8 +435,7 @@ export default class MainScene extends Phaser.Scene {
         const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(1);
         fireball.anims.play('Fireball');
     
-        this.physics.add.overlap(fireball, this.internetExplorer, this.hitEnemy1, null, this);
-        this.physics.add.overlap(fireball, this.cacodaemon, this.hitEnemy2, null, this);
+        
         let velocityX = 0;
         let velocityY = 0;
         switch (this.currentDirection) {

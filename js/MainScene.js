@@ -17,6 +17,13 @@ export default class MainScene extends Phaser.Scene {
             "I'm here to stop you from exploring further!",
             "Prepare to face my Internet Powers!"
         ];
+        this.oldmanDialogue = [
+            "C:\\OldMan> Hey! You're finally here!",
+            "C:\\OldMan> I'll be your guide in defeating the viruses!",
+            "C:\\OldMan> There's many different types of them but, with your knowledge, it should be easy.",
+            "C:\\OldMan> The viruses seem to be weirdly agitated this time...",
+            "C:\\OldMan> Maybe, this time, there's something more serious going on..."
+        ];
         this.dialogueTriggered = false;
         this.hearts = []; // Heart array
         let walls; // Reference to the wall layer
@@ -71,7 +78,7 @@ export default class MainScene extends Phaser.Scene {
         console.log('Vidas do Inimigo na criação:', this.enemyHits);
 
         this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
-        this.oldman = this.physics.add.sprite(450, 100, 'oldman').setScale(1);
+        this.oldman = this.physics.add.sprite(450, 50, 'oldman').setScale(1);
         
         this.anims.create({
             key: 'oldmanidle',
@@ -173,6 +180,7 @@ export default class MainScene extends Phaser.Scene {
 
         this.physics.add.overlap(this.player, this.cacodaemon, this.handlePlayerDamage, null, this);
         this.physics.add.overlap(this.player, this.internetExplorer, this.handlePlayerDamage, null, this);
+        this.physics.add.overlap(this.player, this.oldman, this.interactWithOldman, null, this);
 
         this.physics.world.createDebugGraphic();
     }
@@ -510,6 +518,18 @@ export default class MainScene extends Phaser.Scene {
         if (!this.dialogueTriggered) {
             this.dialogueTriggered = true;
             this.scene.launch(this.dialogueSceneKey, { dialogueData: this.internetExplorerDialogue });
+            this.scene.pause();
+
+            this.events.on('resume', () => {
+                this.scene.resume();
+            });
+        }
+    }
+
+    interactWithOldman(player, oldman) {
+        if (!this.dialogueTriggered) {
+            this.dialogueTriggered = true;
+            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.oldmanDialogue });
             this.scene.pause();
 
             this.events.on('resume', () => {

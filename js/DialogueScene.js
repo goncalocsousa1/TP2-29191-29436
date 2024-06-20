@@ -12,14 +12,15 @@ export default class DialogueScene extends Phaser.Scene {
     }
 
     create() {
-        // Add terminal style background
-        this.add.rectangle(50, 350, 850, 150, 0x000000).setOrigin(0, 0);
+        // Add terminal style background with reduced height
+        this.add.rectangle(50, 350, 850, 100, 0x000000).setOrigin(0, 0);
 
         // Display initial dialogue line
-        this.dialogueText = this.add.text(100, 400, '', {
+        this.dialogueText = this.add.text(100, 360, '', {
             fontFamily: 'Courier',
-            fontSize: 24,
-            color: '#00ff00'
+            fontSize: 16, // Smaller font size
+            color: '#00ff00',
+            wordWrap: { width: 800, useAdvancedWrap: true } // Word wrap settings
         });
 
         // Start typing the first line of dialogue
@@ -27,7 +28,9 @@ export default class DialogueScene extends Phaser.Scene {
 
         // Progress to next line on keyboard press
         this.input.keyboard.on('keydown-ENTER', () => {
-            if (!this.isTyping) {
+            if (this.isTyping) {
+                this.completeCurrentLine();
+            } else {
                 this.progressDialogue();
             }
         });
@@ -37,21 +40,30 @@ export default class DialogueScene extends Phaser.Scene {
         this.isTyping = true;
         this.typingIndex = 0;
         this.dialogueText.setText('');
-        this.time.addEvent({
-            callback: this.typeCharacter,
-            callbackScope: this,
-            delay: this.typingSpeed,
-            loop: true
-        });
+        this.typeCharacter();
     }
 
     typeCharacter() {
-        if (this.typingIndex < this.dialogueData[this.currentLine].length) {
-            this.dialogueText.text += this.dialogueData[this.currentLine][this.typingIndex];
-            this.typingIndex++;
-        } else {
+        this.time.addEvent({
+            delay: this.typingSpeed,
+            callback: () => {
+                if (this.typingIndex < this.dialogueData[this.currentLine].length) {
+                    this.dialogueText.text += this.dialogueData[this.currentLine][this.typingIndex];
+                    this.typingIndex++;
+                    this.typeCharacter();
+                } else {
+                    this.isTyping = false;
+                }
+            },
+            callbackScope: this
+        });
+    }
+
+    completeCurrentLine() {
+        if (this.isTyping) {
+            this.dialogueText.setText(this.dialogueData[this.currentLine]);
+            this.typingIndex = this.dialogueData[this.currentLine].length;
             this.isTyping = false;
-            this.time.removeAllEvents();
         }
     }
 

@@ -5,27 +5,22 @@ export default class MainScene extends Phaser.Scene {
         this.bullets;
         this.canShootIce = true;
         this.canShootFireball = true;
-        this.enemyHits = 3;
-        this.enemyHitsCaco = 3;
-        this.isEnemyDestroyed = false;
         this.hitCooldown = false;
         this.currentDirection;
         this.playerHealth = 5; // Initial player health
         this.dialogueSceneKey = 'DialogueScene'; // Key for the DialogueScene
-        this.internetExplorerDialogue = [
-            "C:\\InternetExplorer> Hello, I'm Internet Explorer.",
-            "I'm here to stop you from exploring further!",
-            "Prepare to face my Internet Powers!"
-        ];
         this.oldmanDialogue = [
             "C:\\OldMan> Hey! You're finally here!",
             "C:\\OldMan> I'll be your guide in defeating the viruses!",
             "C:\\OldMan> There's many different types of them but, with your knowledge, it should be easy.",
             "C:\\OldMan> The viruses seem to be weirdly agitated this time...",
-            "C:\\OldMan> Maybe, this time, there's something more serious going on..."
+            "C:\\OldMan> Maybe, this time, there's something more serious going on...",
+            "C:\\OldMan> Enter that portal and find out!"
         ];
         this.dialogueTriggered = false;
+        this.oldmanDialogueCompleted = false; // Flag to check if oldman dialogue is completed
         this.hearts = []; // Heart array
+        this.portal1 = null; // Reference to the portal
         let walls; // Reference to the wall layer
     }
 
@@ -42,8 +37,6 @@ export default class MainScene extends Phaser.Scene {
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
         this.load.image('empty_health_heart', 'assets/images/HUD/empty_health_heart.png');
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
-        this.load.image('internet_explorer', 'assets/images/Enemies/internetExplorer.png');
-        this.load.spritesheet('cacodaemon', 'assets/images/Enemies/Cacodaemon.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('oldman', 'assets/images/Characters/48x48.png', { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', { frameWidth: 64, frameHeight: 64 });
     }
@@ -74,10 +67,6 @@ export default class MainScene extends Phaser.Scene {
             this.hearts.push(heart);
         }
 
-        this.internetExplorer = this.physics.add.sprite(250, 250, 'internet_explorer').setScale(0.20);
-        console.log('Vidas do Inimigo na criação:', this.enemyHits);
-
-        this.cacodaemon = this.physics.add.sprite(400, 300, 'cacodaemon').setScale(1);
         this.oldman = this.physics.add.sprite(450, 50, 'oldman').setScale(1);
         
         this.anims.create({
@@ -87,23 +76,19 @@ export default class MainScene extends Phaser.Scene {
             repeat: -1
         });
         this.oldman.anims.play('oldmanidle', true);
-        
-        this.portal1 = this.add.sprite(50, 265, 'portal').setScale(1.5);
+
         this.anims.create({
             key: 'portal-idle',
             frames: this.anims.generateFrameNumbers('portal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
             frameRate: 8,
             repeat: -1
         });
-        this.portal1.anims.play('portal-idle', true);
-    
-        this.physics.world.enable(this.portal1);
-        this.portal1.body.setSize(20, 50);
-        
-        this.physics.add.overlap(this.player, this.portal1, this.enterPortal, null, this);
-    
-        this.portal2 = this.add.sprite(870, 265, 'portal').setScale(1.5);
-        this.portal2.anims.play('portal-idle', true);
+        this.anims.create({
+            key: 'portal-open',
+            frames: this.anims.generateFrameNumbers('portal', { frames: [8, 9, 10, 11, 12, 13, 14, 15] }),
+            frameRate: 8,
+            repeat: 0
+        });
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -135,31 +120,6 @@ export default class MainScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-        this.anims.create({
-            key: 'EnemyHit',
-            frames: this.anims.generateFrameNumbers('ice', { start: 13, end: 19 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'cacodaemonAnim',
-            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 0, end: 5 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'cacodaemonDeath',
-            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 19, end: 24 }),
-            frameRate: 8,
-            repeat: 0 // A animação não se repete
-        });
-
-        this.fireballs = this.physics.add.group({
-            defaultKey: 'fireball',
-            maxSize: 100
-        });
-        this.physics.add.overlap(this.fireballs, this.internetExplorer, this.hitEnemy1, null, this);
-        this.physics.add.overlap(this.fireballs, this.cacodaemon, this.hitEnemy2, null, this);
 
         this.inputKeys = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -178,8 +138,6 @@ export default class MainScene extends Phaser.Scene {
             runChildUpdate: true 
         });
 
-        this.physics.add.overlap(this.player, this.cacodaemon, this.handlePlayerDamage, null, this);
-        this.physics.add.overlap(this.player, this.internetExplorer, this.handlePlayerDamage, null, this);
         this.physics.add.overlap(this.player, this.oldman, this.interactWithOldman, null, this);
 
         this.physics.world.createDebugGraphic();
@@ -240,19 +198,7 @@ export default class MainScene extends Phaser.Scene {
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
-        const enemySpeed = 0.15;
-        let enemyVelocity = new Phaser.Math.Vector2(
-            this.player.x - this.internetExplorer.x,
-            this.player.y - this.internetExplorer.y
-        );
-
-        enemyVelocity.normalize();
-        enemyVelocity.scale(enemySpeed);
-        this.internetExplorer.x += enemyVelocity.x;
-        this.internetExplorer.y += enemyVelocity.y;
-
         this.graphics.clear();
-        this.updateEnemy(this.cacodaemon, 0.50, 23, 32, 'cacodaemonAnim');
 
         if (isMoving) {
             playerVelocity.normalize();
@@ -277,118 +223,6 @@ export default class MainScene extends Phaser.Scene {
         if (this.inputKeys.rightArrow.isDown) {
             this.currentDirection = 'right';
             this.fireBullet();
-        }
-    }
-
-    updateEnemy(enemy, speed, playerRadius, enemyRadius, animKey) {
-        let enemyVelocity = new Phaser.Math.Vector2(
-            this.player.x - enemy.x,
-            this.player.y - enemy.y
-        );
-
-        enemyVelocity.normalize();
-        enemyVelocity.scale(speed);
-        enemy.x += enemyVelocity.x;
-        enemy.y += enemyVelocity.y;
-        enemy.anims.play(animKey, true);
-
-        let angle = Phaser.Math.RadToDeg(Math.atan2(enemyVelocity.y, enemyVelocity.x));
-        enemy.setAngle(angle);
-
-        if (enemyVelocity.x < 0) {
-            enemy.setFlipY(true);
-        } else {
-            enemy.setFlipY(false);
-        }
-    }
-
-    handlePlayerDamage(player, enemy) {
-        this.applyDamageToPlayer(0.5);
-    }
-
-    updateHealthDisplay() {
-        let fullHearts = Math.floor(this.playerHealth);
-        let halfHeart = (this.playerHealth % 1 !== 0);
-        this.hearts.forEach((heart, index) => {
-            if (index < fullHearts) {
-                heart.setTexture('full_health_heart');
-            } else if (index === fullHearts && halfHeart) {
-                heart.setTexture('half_health_heart');
-            } else {
-                heart.setTexture('empty_health_heart');
-            }
-        });
-    }
-
-    applyDamageToPlayer(damage) {
-        if (!this.hitCooldown) {
-            this.playerHealth -= damage;
-            this.hitCooldown = true;
-            this.time.addEvent({
-                delay: 1000,
-                callback: () => { this.hitCooldown = false; },
-                callbackScope: this
-            });
-            this.updateHealthDisplay();
-            if (this.playerHealth <= 0) {
-                this.gameOver();
-            }
-        }
-    }
-
-    gameOver() {
-        this.physics.pause();
-        this.anims.pauseAll();
-        this.scene.start('LoseScene');
-    }
-
-    shootFireball() {
-        if (!this.canShootFireball) return;
-        this.canShootFireball = false;
-
-        const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(1);
-        fireball.anims.play('Fireball');
-
-        let velocityX = 0;
-        let velocityY = 0;
-        switch (this.currentDirection) {
-            case 'left':
-                velocityX = -300;
-                fireball.angle = 180;
-                break;
-            case 'right':
-                velocityX = 300;
-                fireball.angle = 0;
-                break;
-            case 'up':
-                velocityY = -300;
-                fireball.angle = -90;
-                break;
-            case 'down':
-                velocityY = 300;
-                fireball.angle = 90;
-                break;
-        }
-        fireball.setVelocity(velocityX, velocityY);
-        this.time.addEvent({
-            delay: this.fireballCooldownTime,
-            callback: () => {
-                this.canShootFireball = true;
-            },
-            callbackScope: this
-        });
-    }
-
-    hitEnemy1(attack, enemy){
-        this.time.delayedCall(50, () => {  
-            attack.destroy();
-        })
-        
-        this.enemyHits -=1;
-        console.log("vidas =" + this.enemyHits);
-        if(this.enemyHits <=0){
-            this.internetExplorer.destroy();
-            console.log("MORREU");
         }
     }
 
@@ -442,86 +276,13 @@ export default class MainScene extends Phaser.Scene {
             },
             callbackScope: this
         });
-    
-        this.physics.add.overlap(icebullet, this.internetExplorer, this.bulletHitEnemy, null, this);
-        this.physics.add.overlap(icebullet, this.cacodaemon, this.bulletHitEnemyCaco, null, this);
-    }
-
-    bulletHitEnemy(icebullet, internetExplorer) {
-        if (this.hitCooldown) return;
-
-        this.hitCooldown = true;
-
-        this.enemyHits -= 1;
-        console.log('Vidas restantes do Inimigo:', this.enemyHits);
-
-        if (this.enemyHits <= 0) {
-            internetExplorer.destroy();
-            this.isEnemyDestroyed = true;
-            console.log('Inimigo destruído');
-        } else {
-            icebullet.anims.play('EnemyHit');
-        }
-
-        this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                this.hitCooldown = false;
-            },
-            callbackScope: this
-        });
-
-        this.time.delayedCall(500, () => {
-            icebullet.destroy();
-        });
-    }
-
-    bulletHitEnemyCaco(icebullet, cacodaemon) {
-        if (this.hitCooldown) return;
-
-        this.hitCooldown = true;
-
-        this.enemyHitsCaco -= 1;
-        console.log('Vidas restantes do Cacodaemon:', this.enemyHitsCaco);
-
-        if (this.enemyHitsCaco <= 0) {
-            cacodaemon.anims.play('cacodaemonDeath');
-            cacodaemon.setActive(false).setVisible(false);
-            cacodaemon.body.enable = false;
-            this.isEnemyDestroyed = true;
-            console.log('Cacodaemon destruído');
-        } else {
-            icebullet.anims.play('EnemyHit');
-        }
-
-        this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                this.hitCooldown = false;
-            },
-            callbackScope: this
-        });
-
-        this.time.delayedCall(500, () => {
-            icebullet.destroy();
-        });
     }
 
     enterPortal(player, portal) {
-        this.scene.start('FirstLeftScene', {
-            playerHealth: this.playerHealth,
-            hearts: this.hearts.map(heart => heart.texture.key) // Pass the heart textures
-        });
-    }
-
-    interactWithInternetExplorer(player, internetExplorer) {
-        if (!this.dialogueTriggered) {
-            this.dialogueTriggered = true;
-            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.internetExplorerDialogue });
-            this.scene.pause();
-
-            this.events.on('resume', () => {
-                this.scene.resume();
+        if (this.oldmanDialogueCompleted) {
+            this.scene.start('FirstLeftScene', {
+                playerHealth: this.playerHealth,
+                hearts: this.hearts.map(heart => heart.texture.key) // Pass the heart textures
             });
         }
     }
@@ -533,8 +294,56 @@ export default class MainScene extends Phaser.Scene {
             this.scene.pause();
 
             this.events.on('resume', () => {
+                this.oldmanDialogueCompleted = true;
+                this.createPortal();
                 this.scene.resume();
             });
         }
+    }
+
+    createPortal() {
+        this.portal1 = this.add.sprite(50, 265, 'portal').setScale(1.5);
+        this.portal1.anims.play('portal-open', true).on('animationcomplete', () => {
+            this.portal1.anims.play('portal-idle', true);
+            this.physics.world.enable(this.portal1);
+            this.portal1.body.setSize(20, 50);
+            this.physics.add.overlap(this.player, this.portal1, this.enterPortal, null, this);
+        });
+    }
+
+    updateHealthDisplay() {
+        let fullHearts = Math.floor(this.playerHealth);
+        let halfHeart = (this.playerHealth % 1 !== 0);
+        this.hearts.forEach((heart, index) => {
+            if (index < fullHearts) {
+                heart.setTexture('full_health_heart');
+            } else if (index === fullHearts && halfHeart) {
+                heart.setTexture('half_health_heart');
+            } else {
+                heart.setTexture('empty_health_heart');
+            }
+        });
+    }
+
+    applyDamageToPlayer(damage) {
+        if (!this.hitCooldown) {
+            this.playerHealth -= damage;
+            this.hitCooldown = true;
+            this.time.addEvent({
+                delay: 1000,
+                callback: () => { this.hitCooldown = false; },
+                callbackScope: this
+            });
+            this.updateHealthDisplay();
+            if (this.playerHealth <= 0) {
+                this.gameOver();
+            }
+        }
+    }
+
+    gameOver() {
+        this.physics.pause();
+        this.anims.pauseAll();
+        this.scene.start('LoseScene');
     }
 }

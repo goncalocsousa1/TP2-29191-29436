@@ -488,7 +488,7 @@ export default class ThirdUpScene extends Phaser.Scene {
 
     enterPortal(player, portal) {
         if (portal === this.portal2) {
-            this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+            this.scene.start('FinishScene');
         }
     }
 

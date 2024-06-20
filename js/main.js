@@ -8,13 +8,14 @@ import SecondUpScene from "./SecondUpScene.js";
 import ThirdUpScene from "./ThirdUpScene.js";
 import ControlsScene from "./ControlsScene.js";
 import BlueScreenScene from "./BlueScreenScene.js";
+import FinishScene from "./FinishScene.js";
 const config = {
     width: 910,     //910
     height: 530,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, ThirdUpScene, DialogueScene, HistoryScene, ControlsScene, LoseScene, BlueScreenScene],
+    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, ThirdUpScene, DialogueScene, HistoryScene, ControlsScene, LoseScene, FinishScene, BlueScreenScene],
     scale: {
         zoom:2,
     },

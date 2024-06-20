@@ -67,6 +67,9 @@ export default class FirstLeftScene extends Phaser.Scene {
 
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
 
+        // Create a group for enemies
+        this.enemyGroup = this.physics.add.group();
+
         // Create three Internet Explorer enemies
         this.enemies.push(this.createEnemy(250, 250));
         this.enemies.push(this.createEnemy(450, 30));
@@ -156,6 +159,9 @@ export default class FirstLeftScene extends Phaser.Scene {
 
         this.physics.add.overlap(this.player, this.enemies, this.handlePlayerDamage, null, this);
         this.physics.add.overlap(this.player, this.portal1, this.closePortal, null, this);
+
+        // Add colliders between enemies
+        this.physics.add.collider(this.enemyGroup, this.enemyGroup);
     }
 
     update() {
@@ -211,17 +217,10 @@ export default class FirstLeftScene extends Phaser.Scene {
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
-        const enemySpeed = 0.15;
+        const enemySpeed = 40; // Speed in pixels per second
 
         this.enemies.forEach(enemy => {
-            let enemyVelocity = new Phaser.Math.Vector2(
-                this.player.x - enemy.x,
-                this.player.y - enemy.y
-            );
-            enemyVelocity.normalize();
-            enemyVelocity.scale(enemySpeed);
-            enemy.x += enemyVelocity.x;
-            enemy.y += enemyVelocity.y;
+            this.updateEnemy(enemy, enemySpeed);
         });
 
         this.graphics.clear();
@@ -256,6 +255,7 @@ export default class FirstLeftScene extends Phaser.Scene {
         let enemy = this.physics.add.sprite(x, y, 'internet_explorer').setScale(0.20);
         enemy.setCollideWorldBounds(true);
         enemy.body.setSize(enemy.width * 0.75, enemy.height * 0.75); // Increase hitbox size to 75% of original size
+        this.enemyGroup.add(enemy); // Add enemy to the group
         return enemy;
     }
 
@@ -338,7 +338,8 @@ export default class FirstLeftScene extends Phaser.Scene {
         console.log(`Vidas restantes do Inimigo ${index + 1}:`, enemyHits - 1);
 
         if (enemyHits <= 1) {
-            enemy.destroy();
+            enemy.setActive(false).setVisible(false);
+            enemy.body.enable = false;
             console.log(`Inimigo ${index + 1} destruído`);
             this.checkAllEnemiesDestroyed();
         } else {
@@ -356,6 +357,10 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.time.delayedCall(500, () => {
             icebullet.destroy();
         });
+    }
+
+    updateEnemy(enemy, speed) {
+        this.physics.moveToObject(enemy, this.player, speed);
     }
 
     checkAllEnemiesDestroyed() {

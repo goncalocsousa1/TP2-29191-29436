@@ -303,7 +303,7 @@ export default class FirstLeftScene extends Phaser.Scene {
         icebullet.anims.play("Ataque");
 
         this.time.addEvent({
-            delay: 500,
+            delay: 1000,
             callback: () => {
                 this.canShootIce = true;
             },

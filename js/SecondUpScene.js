@@ -134,7 +134,7 @@ export default class SecondUpScene extends Phaser.Scene {
 
         this.anims.create({
             key: 'cacodaemonDeath',
-            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 19, end: 24 }),
+            frames: this.anims.generateFrameNumbers('cacodaemon', { start: 24, end: 31 }),
             frameRate: 8,
             repeat: 0 // Animation does not repeat
         });
@@ -300,7 +300,7 @@ export default class SecondUpScene extends Phaser.Scene {
         icebullet.anims.play("Ataque");
 
         this.time.addEvent({
-            delay: 500,
+            delay: 1000,
             callback: () => {
                 this.canShootIce = true;
             },
@@ -333,6 +333,7 @@ export default class SecondUpScene extends Phaser.Scene {
         console.log(`Vidas restantes do Inimigo ${index + 1}:`, enemyHits);
 
         if (enemyHits <= 0) {
+            enemy.setVelocity(0); 
             enemy.anims.play('cacodaemonDeath');
             this.time.delayedCall(500, () => {
                 enemy.setActive(false).setVisible(false);
@@ -344,6 +345,7 @@ export default class SecondUpScene extends Phaser.Scene {
         } else {
             icebullet.anims.play('EnemyHit');
         }
+        
 
         this.time.addEvent({
             delay: 1000,

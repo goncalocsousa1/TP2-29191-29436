@@ -9,6 +9,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.boss;
         this.bossHealth = 20; // Boss life 
         this.specialAttackCooldown = false;
+        this.speedBoostActive = false;
     }
 
     init(data) {
@@ -22,6 +23,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.load.tilemapTiledJSON('motherboard', 'assets/maps/motherboard.json');
         this.load.atlas('Nerd', 'assets/images/Player/nerd.png', 'assets/images/Player/nerd_atlas.json');
         this.load.spritesheet('ice', 'assets/images/Attacks/Ice.png', { frameWidth: 192, frameHeight: 192 });
+        this.load.spritesheet('fireball', 'assets/images/Attacks/fireball.png', { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet('nerd', 'assets/images/Player/nerd.png', { frameWidth: 96, frameHeight: 96 });
         this.load.image('full_health_heart', 'assets/images/HUD/full_health_heart.png');
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
@@ -137,14 +139,31 @@ export default class ThirdUpScene extends Phaser.Scene {
             runChildUpdate: true 
         });
 
+        this.fireballs = this.physics.add.group({
+            defaultKey: 'fireball',
+            maxSize: 100
+        });
+        
         this.physics.add.overlap(this.player, this.boss, () => this.handlePlayerDamage(this.player, this.boss, 1), null, this);
 
         // Schedule special attacks for the boss with reduced delay
         this.time.addEvent({
-            delay: Phaser.Math.Between(2000, 5000), // Random delay between 2 to 5 seconds
+            delay: Phaser.Math.Between(1500, 4000), // Random delay between 1.5 to 4 seconds
             callback: () => {
                 if (this.boss.active) {
                     this.specialAttack(this.boss);
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
+
+        // Schedule speed boost special attack
+        this.time.addEvent({
+            delay: Phaser.Math.Between(8000, 12000), // Random delay between 8 to 12 seconds
+            callback: () => {
+                if (this.boss.active) {
+                    this.speedBoostSpecialAttack(this.boss);
                 }
             },
             callbackScope: this,
@@ -205,7 +224,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
-        const bossSpeed = 0.2;
+        const bossSpeed = this.speedBoostActive ? 80 : 40; // Speed in pixels per second, doubled if speed boost is active
         this.updateBoss(this.boss, bossSpeed);
 
         this.graphics.clear();
@@ -331,15 +350,12 @@ export default class ThirdUpScene extends Phaser.Scene {
     }
 
     updateBoss(boss, speed) {
+        this.physics.moveToObject(boss, this.player, speed);
+
         let bossVelocity = new Phaser.Math.Vector2(
             this.player.x - boss.x,
             this.player.y - boss.y
         );
-
-        bossVelocity.normalize();
-        bossVelocity.scale(speed);
-        boss.x += bossVelocity.x;
-        boss.y += bossVelocity.y;
 
         let angle = Phaser.Math.RadToDeg(Math.atan2(bossVelocity.y, bossVelocity.x));
         boss.setAngle(angle);
@@ -357,14 +373,17 @@ export default class ThirdUpScene extends Phaser.Scene {
             { x: 400, y: 0, angle: 0 },
             { x: -400, y: 0, angle: 180 },
             { x: 0, y: 400, angle: 90 },
-            { x: 0, y: -400, angle: -90 }
+            { x: 0, y: -400, angle: -90 },
+            { x: 400, y: 400, angle: 45 },
+            { x: -400, y: -400, angle: 225 },
+            { x: 400, y: -400, angle: 135 },
+            { x: -400, y: 400, angle: 315 }
         ];
 
         directions.forEach(dir => {
-            let projectile = this.bullets.get(boss.x, boss.y, 'ice').setScale(1);
+            let projectile = this.fireballs.get(boss.x, boss.y, 'fireball').setScale(1);
             projectile.setVelocity(dir.x, dir.y);
             projectile.angle = dir.angle;
-            projectile.anims.play('Ataque');
             const hitboxSize = 30;
             projectile.body.setSize(hitboxSize, hitboxSize);
             projectile.body.setOffset((projectile.width - hitboxSize) / 2, (projectile.height - hitboxSize) / 2);
@@ -372,7 +391,6 @@ export default class ThirdUpScene extends Phaser.Scene {
             // Check for collision with the player
             this.physics.add.overlap(projectile, this.player, (player, projectile) => {
                 this.handlePlayerDamage(player, projectile, 0.5);
-                
             }, null, this);
         });
 
@@ -380,6 +398,17 @@ export default class ThirdUpScene extends Phaser.Scene {
             delay: 2000, // Reduced cooldown time for next special attack
             callback: () => {
                 this.specialAttackCooldown = false;
+            },
+            callbackScope: this
+        });
+    }
+
+    speedBoostSpecialAttack(boss) {
+        this.speedBoostActive = true;
+        this.time.addEvent({
+            delay: 3000, // Speed boost duration
+            callback: () => {
+                this.speedBoostActive = false;
             },
             callbackScope: this
         });

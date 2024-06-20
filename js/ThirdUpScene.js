@@ -7,7 +7,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.hitCooldown = false;
         this.currentDirection;
         this.boss;
-        this.bossHealth = 20; // Boss life 
+        this.bossHealth = 25; // Boss life 
         this.specialAttackCooldown = false;
         this.speedBoostActive = false;
     }
@@ -31,11 +31,12 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
         this.load.image('Trojan', 'assets/images/Enemies/Trojan.png');
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('portalFinal', 'assets/images/Portal/portalFinal.png', { frameWidth: 64, frameHeight: 64 });
     }
 
     create() {
         this.cameras.main.setZoom(0.95);
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');
@@ -66,19 +67,43 @@ export default class ThirdUpScene extends Phaser.Scene {
 
         this.boss = this.createBoss(450, 50);
 
-        this.portal1 = this.add.sprite(870, 265, 'portal').setScale(1.5);
+        this.portal1 = this.add.sprite(450, 510, 'portalFinal').setScale(3).setAngle(90);
+        this.anims.create({
+            key: 'portalFinal-idle',
+            frames: this.anims.generateFrameNumbers('portalFinal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.portal1.anims.play('portalFinal-idle', true);
+        this.physics.world.enable(this.portal1);
+        this.portal1.body.setSize(50, 30); // Set the size of the body for collision
+        this.physics.add.overlap(this.player, this.portal1, this.closePortal, null, this);
+
+        this.portal2 = this.add.sprite(450, 30, 'portal').setScale(3);
+        this.portal2.anims.play('portal-idle', true);
+        this.portal2.setAngle(90);
+        this.portal2.setVisible(false);
+
         this.anims.create({
             key: 'portal-idle',
             frames: this.anims.generateFrameNumbers('portal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
             frameRate: 8,
             repeat: -1
         });
-        this.portal1.anims.play('portal-idle', true);
 
-        this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
-        this.portal2.anims.play('portal-idle', true);
-        this.portal2.setAngle(90);
-        this.portal2.setVisible(false);
+        this.anims.create({
+            key: 'portalFinal-closing',
+            frames: this.anims.generateFrameNumbers('portalFinal', { frames: [16, 17, 18, 19, 20, 21, 22, 23] }),
+            frameRate: 8,
+            repeat: 0
+        });
+
+        this.anims.create({
+            key: 'portal-open',
+            frames: this.anims.generateFrameNumbers('portal', { frames: [8, 9, 10, 11, 12, 13, 14, 15] }),
+            frameRate: 8,
+            repeat: 0
+        });
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -279,7 +304,7 @@ export default class ThirdUpScene extends Phaser.Scene {
     updateBossHealthBar() {
         const healthBarWidth = 100;
         const healthBarHeight = 10;
-        const healthPercent = this.bossHealth / 20;
+        const healthPercent = this.bossHealth / 25;
         this.boss.healthbar.clear();
         this.boss.healthbar.fillStyle(0xff0000, 1);
         this.boss.healthbar.fillRect(this.boss.x - 50, this.boss.y - 65, healthBarWidth * healthPercent, healthBarHeight);
@@ -354,15 +379,20 @@ export default class ThirdUpScene extends Phaser.Scene {
         console.log('Vidas restantes do Boss:', this.bossHealth);
 
         if (this.bossHealth <= 0) {
+            boss.healthbar.destroy();
+            boss.healthbarBackground.destroy();
             boss.healthbar.setActive(false).setVisible(false);
             boss.setActive(false).setVisible(false);
             boss.body.enable = false;
             this.isEnemyDestroyed = true;
             console.log('Boss destruído');
             this.portal2.setVisible(true);
-            this.physics.world.enable(this.portal2);
-            this.portal2.body.setSize(35, 10);
-            this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            this.portal2.anims.play('portal-open', true).on('animationcomplete', () => {
+                this.portal2.anims.play('portal-idle', true);
+                this.physics.world.enable(this.portal2);
+                this.portal2.body.setSize(35, 10);
+                this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            });
         } else {
             icebullet.anims.play('EnemyHit');
         }
@@ -445,8 +475,21 @@ export default class ThirdUpScene extends Phaser.Scene {
         });
     }
 
+    closePortal(player, portal) {
+        if (portal === this.portal1) {
+            portal.anims.play('portalFinal-closing', true);
+            portal.on('animationcomplete', () => {
+                portal.destroy();
+            });
+        } else {
+            this.enterPortal(player, portal);
+        }
+    }
+
     enterPortal(player, portal) {
-        this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        if (portal === this.portal2) {
+            this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        }
     }
 
     handlePlayerDamage(player, enemy, damage) {

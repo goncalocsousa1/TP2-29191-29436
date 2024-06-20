@@ -141,7 +141,7 @@ export default class ThirdUpScene extends Phaser.Scene {
 
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
-            maxSize: 100
+            runChildUpdate: true 
         });
         
         this.physics.add.overlap(this.player, this.boss, () => this.handlePlayerDamage(this.player, this.boss, 1), null, this);

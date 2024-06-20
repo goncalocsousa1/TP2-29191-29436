@@ -10,6 +10,11 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.bossHealth = 25; // Boss life 
         this.specialAttackCooldown = false;
         this.speedBoostActive = false;
+        this.dialogueSceneKey = 'DialogueSceneTU'; // Key for the DialogueScene
+        this.oldmanDialogue = [
+            "C:\\OldMan> This seems to be the Boss. It's a Trojan.. How clever.. Be careful and Good Luck!"
+        ];
+        this.dialogueTriggered = false;
     }
 
     init(data) {
@@ -36,7 +41,6 @@ export default class ThirdUpScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.setZoom(0.95);
-        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');
@@ -196,6 +200,11 @@ export default class ThirdUpScene extends Phaser.Scene {
         });
 
         this.createBossHealthBar();
+
+        // Trigger the old man's dialogue after 1-2 seconds
+        this.time.delayedCall(1000, () => {
+            this.triggerOldmanDialogue();
+        });
     }
 
     update() {
@@ -373,7 +382,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.hitCooldown = true;
 
         this.bossHealth -= 1;
-        const healthPercent = this.bossHealth / 20;
+        const healthPercent = this.bossHealth / 25;
         const barWidth = 100 * healthPercent;
         
         console.log('Vidas restantes do Boss:', this.bossHealth);
@@ -532,5 +541,17 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.physics.pause();
         this.anims.pauseAll();
         this.scene.start('LoseScene');
+    }
+
+    triggerOldmanDialogue() {
+        if (!this.dialogueTriggered) {
+            this.dialogueTriggered = true;
+            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.oldmanDialogue });
+            this.scene.pause();
+
+            this.events.on('resume', () => {
+                this.scene.resume();
+            });
+        }
     }
 }

@@ -11,13 +11,14 @@ import BlueScreenScene from "./BlueScreenScene.js";
 import FinishScene from "./FinishScene.js";
 import DialogueSceneFL from "./DialogueSceneFL.js";
 import DialogueSceneSU from "./DialogueSceneSU.js";
+import DialogueSceneTU from "./DialogueSceneTU.js";
 const config = {
     width: 910,     //910
     height: 530,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,
     parent: 'Hacker-Madness',
-    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, ThirdUpScene, DialogueScene, DialogueSceneFL, DialogueSceneSU, HistoryScene, ControlsScene, LoseScene, FinishScene, BlueScreenScene],
+    scene: [MenuScene, MainScene, FirstLeftScene, SecondUpScene, ThirdUpScene, DialogueScene, DialogueSceneFL, DialogueSceneSU, DialogueSceneTU, HistoryScene, ControlsScene, LoseScene, FinishScene, BlueScreenScene],
     scale: {
         zoom:2,
     },

@@ -160,7 +160,7 @@ export default class ThirdUpScene extends Phaser.Scene {
 
         // Schedule speed boost special attack
         this.time.addEvent({
-            delay: Phaser.Math.Between(8000, 12000), // Random delay between 8 to 12 seconds
+            delay: Phaser.Math.Between(6000, 10000), // Random delay between 6 to 10 seconds
             callback: () => {
                 if (this.boss.active) {
                     this.speedBoostSpecialAttack(this.boss);
@@ -224,7 +224,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
-        const bossSpeed = this.speedBoostActive ? 80 : 40; // Speed in pixels per second, doubled if speed boost is active
+        const bossSpeed = this.speedBoostActive ? 120 : 40; // Speed in pixels per second, doubled if speed boost is active
         this.updateBoss(this.boss, bossSpeed);
 
         this.graphics.clear();

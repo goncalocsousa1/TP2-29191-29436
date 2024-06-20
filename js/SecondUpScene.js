@@ -7,6 +7,11 @@ export default class SecondUpScene extends Phaser.Scene {
         this.hitCooldown = false;
         this.currentDirection;
         this.enemies = [];
+        this.dialogueSceneKey = 'DialogueSceneSU'; // Key for the DialogueScene
+        this.oldmanDialogue = [
+            "C:\\OldMan> These are real deal. Use the skills you got on the previous phase to eliminate this viruses!"
+        ];
+        this.dialogueTriggered = false;
 
         // Global enemy hit points
         this.enemyHits1 = 4;
@@ -218,6 +223,11 @@ export default class SecondUpScene extends Phaser.Scene {
 
         // Add colliders between enemies
         this.physics.add.collider(this.enemyGroup, this.enemyGroup);
+
+        // Trigger the old man's dialogue after 1-2 seconds
+        this.time.delayedCall(1000, () => {
+            this.triggerOldmanDialogue();
+        });
     }
 
     update() {
@@ -547,5 +557,17 @@ export default class SecondUpScene extends Phaser.Scene {
         this.physics.pause();
         this.anims.pauseAll();
         this.scene.start('LoseScene');
+    }
+
+    triggerOldmanDialogue() {
+        if (!this.dialogueTriggered) {
+            this.dialogueTriggered = true;
+            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.oldmanDialogue });
+            this.scene.pause();
+
+            this.events.on('resume', () => {
+                this.scene.resume();
+            });
+        }
     }
 }

@@ -255,6 +255,7 @@ export default class FirstLeftScene extends Phaser.Scene {
     createEnemy(x, y) {
         let enemy = this.physics.add.sprite(x, y, 'internet_explorer').setScale(0.20);
         enemy.setCollideWorldBounds(true);
+        enemy.body.setSize(enemy.width * 0.75, enemy.height * 0.75); // Increase hitbox size to 75% of original size
         return enemy;
     }
 

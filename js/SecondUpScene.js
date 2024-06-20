@@ -251,6 +251,7 @@ export default class SecondUpScene extends Phaser.Scene {
     createEnemy(x, y) {
         let enemy = this.physics.add.sprite(x, y, 'cacodaemon').setScale(1);
         enemy.setCollideWorldBounds(true);
+        enemy.body.setSize(enemy.width * 0.70, enemy.height * 0.70); // Increase hitbox size to 75% of original size
         enemy.anims.play('cacodaemonAnim', true); // Ensure the animation starts
         return enemy;
     }

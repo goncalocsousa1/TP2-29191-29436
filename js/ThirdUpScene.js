@@ -7,7 +7,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.hitCooldown = false;
         this.currentDirection;
         this.boss;
-        this.bossHealth = 10; // Boss hit points
+        this.bossHealth = 20; // Boss life 
         this.specialAttackCooldown = false;
     }
 
@@ -62,7 +62,7 @@ export default class ThirdUpScene extends Phaser.Scene {
 
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
 
-        this.boss = this.createBoss(450, 30);
+        this.boss = this.createBoss(450, 50);
 
         this.portal1 = this.add.sprite(870, 265, 'portal').setScale(1.5);
         this.anims.create({

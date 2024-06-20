@@ -370,6 +370,6 @@ export default class MainScene extends Phaser.Scene {
 
     hitOldman(bullet, oldman) {
         bullet.destroy();
-        this.scene.start('BlueScreenScene'); // Switch to the BlueScreenScene
+        this.scene.start('BlueScreenScene'); 
     }
 }

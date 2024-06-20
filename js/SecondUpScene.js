@@ -12,6 +12,8 @@ export default class SecondUpScene extends Phaser.Scene {
         this.enemyHits1 = 4;
         this.enemyHits2 = 4;
         this.enemyHits3 = 4;
+        this.enemyHits4 = 4;
+        this.enemyHits5 = 4;
     }
 
     init(data) {
@@ -31,6 +33,7 @@ export default class SecondUpScene extends Phaser.Scene {
         this.load.image('half_health_heart', 'assets/images/HUD/half_health_heart.png');
         this.load.image('empty_health_heart', 'assets/images/HUD/empty_health_heart.png');
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
+        this.load.spritesheet('skeleton', 'assets/images/Enemies/Skeleton.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('cacodaemon', 'assets/images/Enemies/Cacodaemon.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('portalFinal', 'assets/images/Portal/portalFinal.png', { frameWidth: 64, frameHeight: 64 });
@@ -38,7 +41,7 @@ export default class SecondUpScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.setZoom(0.95);
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');
@@ -60,7 +63,7 @@ export default class SecondUpScene extends Phaser.Scene {
             this.hearts.push(heart);
         }
 
-        this.player = this.physics.add.sprite(475, 265, 'nerd').setScale(0.75);
+        this.player = this.physics.add.sprite(450, 450, 'nerd').setScale(0.75);
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(48, 48);
         this.player.body.setOffset((this.player.width - 48) / 2, (this.player.height - 48) / 2);
@@ -71,10 +74,14 @@ export default class SecondUpScene extends Phaser.Scene {
         // Create a group for enemies
         this.enemyGroup = this.physics.add.group();
 
-        // Create three enemies
-        this.enemies.push(this.createEnemy(300, 250));
-        this.enemies.push(this.createEnemy(100, 30));
-        this.enemies.push(this.createEnemy(700, 150));
+        // Create three cacodaemon enemies
+        this.enemies.push(this.createCacodaemon(300, 250));
+        this.enemies.push(this.createCacodaemon(100, 30));
+        this.enemies.push(this.createCacodaemon(700, 150));
+        
+        // Create two skeleton enemies
+        this.enemies.push(this.createSkeleton(200, 200));
+        this.enemies.push(this.createSkeleton(600, 200));
 
         this.portal1 = this.add.sprite(450, 510, 'portal').setScale(2);
         this.portal1.anims.play('portal-idle', true);
@@ -168,6 +175,25 @@ export default class SecondUpScene extends Phaser.Scene {
             repeat: 0 // Animation does not repeat
         });
 
+        this.anims.create({
+            key: 'SkeletonBaixo',
+            frames: this.anims.generateFrameNumbers('skeleton', { frames: [12, 13, 14, 15] }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'SkeletonCima',
+            frames: this.anims.generateFrameNumbers('skeleton', { frames: [20, 21, 22, 23] }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'SkeletonLado',
+            frames: this.anims.generateFrameNumbers('skeleton', { frames: [16, 17, 18, 19] }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         this.inputKeys = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -248,9 +274,14 @@ export default class SecondUpScene extends Phaser.Scene {
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
         const enemySpeed = 70; 
+        const skeletonSpeed = 100; // Reduced speed for skeletons
 
-        this.enemies.forEach(enemy => {
-            this.updateEnemy(enemy, enemySpeed, 'cacodaemonAnim');
+        this.enemies.forEach((enemy, index) => {
+            if (enemy.texture.key === 'cacodaemon') {
+                this.updateEnemy(enemy, enemySpeed, 'cacodaemonAnim');
+            } else if (enemy.texture.key === 'skeleton') {
+                this.updateSkeleton(enemy, skeletonSpeed);
+            }
         });
 
         this.graphics.clear();
@@ -281,11 +312,19 @@ export default class SecondUpScene extends Phaser.Scene {
         }
     }
 
-    createEnemy(x, y) {
+    createCacodaemon(x, y) {
         let enemy = this.physics.add.sprite(x, y, 'cacodaemon').setScale(1);
         enemy.setCollideWorldBounds(true);
-        enemy.body.setSize(enemy.width * 0.70, enemy.height * 0.70); // Increase hitbox size to 75% of original size
+        enemy.body.setSize(enemy.width * 0.70, enemy.height * 0.70); // Increase hitbox size to 70% of original size
         enemy.anims.play('cacodaemonAnim', true); // Ensure the animation starts
+        this.enemyGroup.add(enemy); // Add enemy to the group
+        return enemy;
+    }
+
+    createSkeleton(x, y) {
+        let enemy = this.physics.add.sprite(x, y, 'skeleton').setScale(3);
+        enemy.setCollideWorldBounds(true);
+        enemy.body.setSize(enemy.width * 0.50, enemy.height * 0.50); // Decreased hitbox size to 50% of original size
         this.enemyGroup.add(enemy); // Add enemy to the group
         return enemy;
     }
@@ -362,14 +401,21 @@ export default class SecondUpScene extends Phaser.Scene {
             case 2:
                 enemyHits = --this.enemyHits3;
                 break;
+            case 3:
+                enemyHits = --this.enemyHits4;
+                break;
+            case 4:
+                enemyHits = --this.enemyHits5;
+                break;
         }
 
         console.log(`Vidas restantes do Inimigo ${index + 1}:`, enemyHits);
 
         if (enemyHits <= 0) {
             enemy.setVelocity(0); 
-            enemy.anims.play('cacodaemonDeath');
-            
+            if (enemy.texture.key === 'cacodaemon') {
+                enemy.anims.play('cacodaemonDeath');
+            }
             enemy.setActive(false).setVisible(false);
             enemy.body.enable = false;
             this.isEnemyDestroyed = true;
@@ -413,8 +459,26 @@ export default class SecondUpScene extends Phaser.Scene {
         }
     }
 
+    updateSkeleton(skeleton, speed) {
+        this.physics.moveToObject(skeleton, this.player, speed);
+        
+        let direction = new Phaser.Math.Vector2(
+            this.player.x - skeleton.x,
+            this.player.y - skeleton.y
+        ).normalize();
+
+        if (Math.abs(direction.x) > Math.abs(direction.y)) {
+            skeleton.anims.play('SkeletonLado', true);
+            skeleton.setFlipX(direction.x < 0);
+        } else if (direction.y > 0) {
+            skeleton.anims.play('SkeletonBaixo', true);
+        } else {
+            skeleton.anims.play('SkeletonCima', true);
+        }
+    }
+
     checkAllEnemiesDestroyed() {
-        if (this.enemyHits1 <= 0 && this.enemyHits2 <= 0 && this.enemyHits3 <= 0) {
+        if (this.enemyHits1 <= 0 && this.enemyHits2 <= 0 && this.enemyHits3 <= 0 && this.enemyHits4 <= 0 && this.enemyHits5 <= 0) {
             this.portal2.setVisible(true);
             this.portal2.anims.play('portalFinal-open', true).on('animationcomplete', () => {
                 this.portal2.anims.play('portalFinal-idle', true);

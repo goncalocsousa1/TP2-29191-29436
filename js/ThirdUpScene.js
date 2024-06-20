@@ -354,6 +354,7 @@ export default class ThirdUpScene extends Phaser.Scene {
         console.log('Vidas restantes do Boss:', this.bossHealth);
 
         if (this.bossHealth <= 0) {
+            boss.healthbar.setActive(false).setVisible(false);
             boss.setActive(false).setVisible(false);
             boss.body.enable = false;
             this.isEnemyDestroyed = true;

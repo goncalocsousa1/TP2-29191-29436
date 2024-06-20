@@ -33,6 +33,7 @@ export default class SecondUpScene extends Phaser.Scene {
         this.load.image('nerd_face', 'assets/images/HUD/nerdFace.png');
         this.load.spritesheet('cacodaemon', 'assets/images/Enemies/Cacodaemon.png', { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('portal', 'assets/images/Portal/portal.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('portalFinal', 'assets/images/Portal/portalFinal.png', { frameWidth: 64, frameHeight: 64 });
     }
 
     create() {
@@ -75,19 +76,43 @@ export default class SecondUpScene extends Phaser.Scene {
         this.enemies.push(this.createEnemy(100, 30));
         this.enemies.push(this.createEnemy(700, 150));
 
-        this.portal1 = this.add.sprite(870, 265, 'portal').setScale(1.5);
+        this.portal1 = this.add.sprite(450, 510, 'portal').setScale(2);
+        this.portal1.anims.play('portal-idle', true);
+        this.portal1.setAngle(90);
+        this.physics.world.enable(this.portal1);
+        this.portal1.body.setSize(35, 10);
+
+        this.portal2 = this.add.sprite(450, 30, 'portalFinal').setScale(3);
+        this.portal2.setAngle(90);
+        this.portal2.setVisible(false);
+
+        this.anims.create({
+            key: 'portalFinal-idle',
+            frames: this.anims.generateFrameNumbers('portalFinal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'portal-closing',
+            frames: this.anims.generateFrameNumbers('portal', { frames: [16, 17, 18, 19, 20, 21, 22, 23]}),
+            frameRate: 8,
+            repeat: 0
+        });
+
         this.anims.create({
             key: 'portal-idle',
             frames: this.anims.generateFrameNumbers('portal', { frames: [0, 1, 2, 3, 4, 5, 6, 7] }),
             frameRate: 8,
             repeat: -1
         });
-        this.portal1.anims.play('portal-idle', true);
 
-        this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
-        this.portal2.anims.play('portal-idle', true);
-        this.portal2.setAngle(90);
-        this.portal2.setVisible(false);
+        this.anims.create({
+            key: 'portalFinal-open',
+            frames: this.anims.generateFrameNumbers('portalFinal', { frames: [8, 9, 10, 11, 12, 13, 14, 15] }),
+            frameRate: 8,
+            repeat: 0
+        });
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -163,6 +188,7 @@ export default class SecondUpScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.player, this.enemies, this.handlePlayerDamage, null, this);
+        this.physics.add.overlap(this.player, this.portal1, this.closePortal, null, this);
 
         // Add colliders between enemies
         this.physics.add.collider(this.enemyGroup, this.enemyGroup);
@@ -344,11 +370,11 @@ export default class SecondUpScene extends Phaser.Scene {
             enemy.setVelocity(0); 
             enemy.anims.play('cacodaemonDeath');
             
-                enemy.setActive(false).setVisible(false);
-                enemy.body.enable = false;
-                this.isEnemyDestroyed = true;
-                console.log(`Inimigo ${index + 1} destruído`);
-                this.checkAllEnemiesDestroyed();
+            enemy.setActive(false).setVisible(false);
+            enemy.body.enable = false;
+            this.isEnemyDestroyed = true;
+            console.log(`Inimigo ${index + 1} destruído`);
+            this.checkAllEnemiesDestroyed();
             
         } else {
             icebullet.anims.play('EnemyHit');
@@ -390,14 +416,30 @@ export default class SecondUpScene extends Phaser.Scene {
     checkAllEnemiesDestroyed() {
         if (this.enemyHits1 <= 0 && this.enemyHits2 <= 0 && this.enemyHits3 <= 0) {
             this.portal2.setVisible(true);
-            this.physics.world.enable(this.portal2);
-            this.portal2.body.setSize(35, 10);
-            this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            this.portal2.anims.play('portalFinal-open', true).on('animationcomplete', () => {
+                this.portal2.anims.play('portalFinal-idle', true);
+                this.physics.world.enable(this.portal2);
+                this.portal2.body.setSize(40, 10);
+                this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            });
+        }
+    }
+
+    closePortal(player, portal) {
+        if (portal === this.portal1) {
+            portal.anims.play('portal-closing', true);
+            portal.on('animationcomplete', () => {
+                portal.destroy();
+            });
+        } else {
+            this.enterPortal(player, portal);
         }
     }
 
     enterPortal(player, portal) {
-        this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        if (portal === this.portal2) {
+            this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        }
     }
 
     handlePlayerDamage(player, enemy) {

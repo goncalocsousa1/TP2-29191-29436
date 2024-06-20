@@ -9,7 +9,7 @@ import ThirdUpScene from "./ThirdUpScene.js";
 import ControlsScene from "./ControlsScene.js";
 import BlueScreenScene from "./BlueScreenScene.js";
 const config = {
-    width: 910,     //950
+    width: 910,     //910
     height: 530,    //530
     backgroundColor: '#333333',
     type: Phaser.AUTO,

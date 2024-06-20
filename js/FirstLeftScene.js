@@ -87,13 +87,19 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.portal1.body.setSize(20, 50);
 
         this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
-        this.portal2.anims.play('portal-idle', true);
         this.portal2.setAngle(90);
         this.portal2.setVisible(false);
 
         this.anims.create({
             key: 'portal-closing',
             frames: this.anims.generateFrameNumbers('portal', { frames: [16, 17, 18, 19, 20, 21, 22, 23]}),
+            frameRate: 8,
+            repeat: 0
+        });
+
+        this.anims.create({
+            key: 'portal-open',
+            frames: this.anims.generateFrameNumbers('portal', { frames: [8, 9, 10, 11, 12, 13, 14, 15] }),
             frameRate: 8,
             repeat: 0
         });
@@ -366,9 +372,12 @@ export default class FirstLeftScene extends Phaser.Scene {
     checkAllEnemiesDestroyed() {
         if (this.enemyHits1 <= 0 && this.enemyHits2 <= 0 && this.enemyHits3 <= 0) {
             this.portal2.setVisible(true);
-            this.physics.world.enable(this.portal2);
-            this.portal2.body.setSize(35, 10);
-            this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            this.portal2.anims.play('portal-open', true).on('animationcomplete', () => {
+                this.portal2.anims.play('portal-idle', true);
+                this.physics.world.enable(this.portal2);
+                this.portal2.body.setSize(35, 10);
+                this.physics.add.overlap(this.player, this.portal2, this.enterPortal, null, this);
+            });
         }
     }
 

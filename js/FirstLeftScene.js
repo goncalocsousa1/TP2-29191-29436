@@ -80,11 +80,20 @@ export default class FirstLeftScene extends Phaser.Scene {
             repeat: -1
         });
         this.portal1.anims.play('portal-idle', true);
+        this.physics.world.enable(this.portal1);
+        this.portal1.body.setSize(20, 50);
 
         this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
         this.portal2.anims.play('portal-idle', true);
         this.portal2.setAngle(90);
         this.portal2.setVisible(false);
+
+        this.anims.create({
+            key: 'portal-closing',
+            frames: this.anims.generateFrameNumbers('portal', { frames: [16, 17, 18, 19, 20, 21, 22, 23]}),
+            frameRate: 8,
+            repeat: 0
+        });
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -146,6 +155,7 @@ export default class FirstLeftScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.player, this.enemies, this.handlePlayerDamage, null, this);
+        this.physics.add.overlap(this.player, this.portal1, this.closePortal, null, this);
     }
 
     update() {
@@ -356,8 +366,21 @@ export default class FirstLeftScene extends Phaser.Scene {
         }
     }
 
+    closePortal(player, portal) {
+        if (portal === this.portal1) {
+            portal.anims.play('portal-closing', true);
+            portal.on('animationcomplete', () => {
+                portal.destroy();
+            });
+        } else {
+            this.enterPortal(player, portal);
+        }
+    }
+
     enterPortal(player, portal) {
-        this.scene.start('SecondUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        if (portal === this.portal2) {
+            this.scene.start('SecondUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        }
     }
 
     handlePlayerDamage(player, enemy) {

@@ -169,6 +169,8 @@ export default class ThirdUpScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+
+        this.createBossHealthBar();
     }
 
     update() {
@@ -253,12 +255,37 @@ export default class ThirdUpScene extends Phaser.Scene {
             this.currentDirection = 'right';
             this.fireBullet();
         }
+
+        this.updateBossHealthBar();
     }
 
     createBoss(x, y) {
         let boss = this.physics.add.sprite(x, y, 'Trojan').setScale(0.20);
         boss.setCollideWorldBounds(true);
         return boss;
+    }
+
+    createBossHealthBar() {
+        const healthBarWidth = 100;
+        const healthBarHeight = 10;
+        this.boss.healthbarBackground = this.add.graphics();
+        this.boss.healthbar = this.add.graphics();
+        this.boss.healthbarBackground.fillStyle(0x808080, 1);
+        this.boss.healthbarBackground.fillRect(this.boss.x - 50, this.boss.y - 65, healthBarWidth, healthBarHeight);
+        this.boss.healthbar.fillStyle(0xff0000, 1);
+        this.boss.healthbar.fillRect(this.boss.x - 50, this.boss.y - 65, healthBarWidth, healthBarHeight);
+    }
+
+    updateBossHealthBar() {
+        const healthBarWidth = 100;
+        const healthBarHeight = 10;
+        const healthPercent = this.bossHealth / 20;
+        this.boss.healthbar.clear();
+        this.boss.healthbar.fillStyle(0xff0000, 1);
+        this.boss.healthbar.fillRect(this.boss.x - 50, this.boss.y - 65, healthBarWidth * healthPercent, healthBarHeight);
+        this.boss.healthbarBackground.clear();
+        this.boss.healthbarBackground.fillStyle(0x808080, 1);
+        this.boss.healthbarBackground.fillRect(this.boss.x - 50, this.boss.y - 65, healthBarWidth, healthBarHeight);
     }
 
     fireBullet() {
@@ -321,6 +348,9 @@ export default class ThirdUpScene extends Phaser.Scene {
         this.hitCooldown = true;
 
         this.bossHealth -= 1;
+        const healthPercent = this.bossHealth / 20;
+        const barWidth = 100 * healthPercent;
+        
         console.log('Vidas restantes do Boss:', this.bossHealth);
 
         if (this.bossHealth <= 0) {

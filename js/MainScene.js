@@ -139,8 +139,12 @@ export default class MainScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.player, this.oldman, this.interactWithOldman, null, this);
+        this.physics.add.overlap(this.bullets, this.oldman, this.hitOldman, null, this);
 
         this.physics.world.createDebugGraphic();
+
+        // Add the message above the oldman
+        this.showOldmanMessage();
     }
 
     update() {
@@ -345,5 +349,27 @@ export default class MainScene extends Phaser.Scene {
         this.physics.pause();
         this.anims.pauseAll();
         this.scene.start('LoseScene');
+    }
+
+    showOldmanMessage() {
+        const message = "Hello, I was waiting, come and talk to me";
+        const text = this.add.text(this.oldman.x, this.oldman.y - 50, message, {
+            font: "16px Arial",
+            fill: "#00ff00", // Green color
+            backgroundColor: "#111111"
+        }).setOrigin(0.5, 0.5);
+
+        this.time.addEvent({
+            delay: 3000,
+            callback: () => {
+                text.destroy();
+            },
+            callbackScope: this
+        });
+    }
+
+    hitOldman(bullet, oldman) {
+        bullet.destroy();
+        this.scene.start('BlueScreenScene'); // Switch to the BlueScreenScene
     }
 }

@@ -8,6 +8,7 @@ export default class ControlsScene extends Phaser.Scene {
         this.load.image('terminal', 'assets/images/terminal.jpg');  // Load the terminal background image.
         this.load.image('wasd', 'assets/images/HUD/wasd.png');  // Load the WASD keys image.
         this.load.image('arrows', 'assets/images/HUD/arrows.png');  // Load the arrows keys image.
+        this.load.image('enter', 'assets/images/HUD/enter.png');  // Load the Enter key image.
     }
 
     create() {
@@ -18,6 +19,7 @@ export default class ControlsScene extends Phaser.Scene {
         const prompt = 'root@controls ~ $ ';
         const controlsText = prompt + 'Use WASD to move' + '\n\n\n\n';  // Added extra newlines for more space
         const controlsText2 = prompt + 'Use the arrows to shoot' + '\n\n\n\n';
+        const controlsText3 = prompt + 'Use Enter to skip/exit messages' + '\n\n\n\n';
 
         let typingText = this.add.text(50, 50, '', { 
             font: '18px Courier',
@@ -26,10 +28,13 @@ export default class ControlsScene extends Phaser.Scene {
         });
 
         this.displayTextAndAwaitEnter(typingText, controlsText, () => {
-            this.showControlImage('wasd', this.cameras.main.width - 150, 100);
+            this.showControlImage('wasd', this.cameras.main.width - 150, 100, 0.5);
             this.displayTextAndAwaitEnter(typingText, controlsText2, () => {
-                this.showControlImage('arrows', this.cameras.main.width - 150, 250);
-                this.autoTypeCommand(typingText, 'cd ..', prompt);
+                this.showControlImage('arrows', this.cameras.main.width - 150, 250, 0.5);
+                this.displayTextAndAwaitEnter(typingText, controlsText3, () => {
+                    this.showControlImage('enter', this.cameras.main.width - 170, 400, 0.15);  
+                    this.autoTypeCommand(typingText, 'cd ..', prompt);
+                });
             });
         });
     }
@@ -61,8 +66,8 @@ export default class ControlsScene extends Phaser.Scene {
         });
     }
 
-    showControlImage(imageKey, imageX, imageY) {
-        this.add.image(imageX, imageY, imageKey).setScale(0.5);
+    showControlImage(imageKey, imageX, imageY, scale = 0.5) {
+        this.add.image(imageX, imageY, imageKey).setScale(scale);
     }
 
     autoTypeCommand(textObject, command, prompt) {

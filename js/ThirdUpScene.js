@@ -61,7 +61,7 @@ export default class ThirdUpScene extends Phaser.Scene {
             this.hearts.push(heart);
         }
 
-        this.player = this.physics.add.sprite(475, 265, 'nerd').setScale(0.75);
+        this.player = this.physics.add.sprite(450, 450, 'nerd').setScale(0.75);
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(48, 48);
         this.player.body.setOffset((this.player.width - 48) / 2, (this.player.height - 48) / 2);

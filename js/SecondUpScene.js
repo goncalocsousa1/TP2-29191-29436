@@ -67,6 +67,10 @@ export default class SecondUpScene extends Phaser.Scene {
 
         this.nerdFace = this.add.image(90, 45, 'nerd_face').setScale(0.3);
 
+        // Create a group for enemies
+        this.enemyGroup = this.physics.add.group();
+
+        // Create three enemies
         this.enemies.push(this.createEnemy(300, 250));
         this.enemies.push(this.createEnemy(100, 30));
         this.enemies.push(this.createEnemy(700, 150));
@@ -83,7 +87,7 @@ export default class SecondUpScene extends Phaser.Scene {
         this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
         this.portal2.anims.play('portal-idle', true);
         this.portal2.setAngle(90);
-        this.portal2.setVisible(false)
+        this.portal2.setVisible(false);
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -159,6 +163,9 @@ export default class SecondUpScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.player, this.enemies, this.handlePlayerDamage, null, this);
+
+        // Add colliders between enemies
+        this.physics.add.collider(this.enemyGroup, this.enemyGroup);
     }
 
     update() {
@@ -214,10 +221,10 @@ export default class SecondUpScene extends Phaser.Scene {
         playerVelocity.scale(speed);
         this.player.setVelocity(playerVelocity.x, playerVelocity.y);
 
-        const enemySpeed = 0.55;
+        const enemySpeed = 70; 
 
         this.enemies.forEach(enemy => {
-            this.updateEnemy(enemy, enemySpeed, 23, 32, 'cacodaemonAnim');
+            this.updateEnemy(enemy, enemySpeed, 'cacodaemonAnim');
         });
 
         this.graphics.clear();
@@ -253,6 +260,7 @@ export default class SecondUpScene extends Phaser.Scene {
         enemy.setCollideWorldBounds(true);
         enemy.body.setSize(enemy.width * 0.70, enemy.height * 0.70); // Increase hitbox size to 75% of original size
         enemy.anims.play('cacodaemonAnim', true); // Ensure the animation starts
+        this.enemyGroup.add(enemy); // Add enemy to the group
         return enemy;
     }
 
@@ -335,13 +343,13 @@ export default class SecondUpScene extends Phaser.Scene {
         if (enemyHits <= 0) {
             enemy.setVelocity(0); 
             enemy.anims.play('cacodaemonDeath');
-            this.time.delayedCall(500, () => {
+            
                 enemy.setActive(false).setVisible(false);
                 enemy.body.enable = false;
                 this.isEnemyDestroyed = true;
                 console.log(`Inimigo ${index + 1} destruído`);
                 this.checkAllEnemiesDestroyed();
-            });
+            
         } else {
             icebullet.anims.play('EnemyHit');
         }
@@ -360,22 +368,14 @@ export default class SecondUpScene extends Phaser.Scene {
         });
     }
 
-    updateEnemy(enemy, speed, playerRadius, enemyRadius, animKey) {
-        if (!enemy || !enemy.body) {
-            console.error("Invalid enemy:", enemy);
-            return;
-        }
+    updateEnemy(enemy, speed, animKey) {
+        this.physics.moveToObject(enemy, this.player, speed);
+        enemy.anims.play(animKey, true);
 
         let enemyVelocity = new Phaser.Math.Vector2(
             this.player.x - enemy.x,
             this.player.y - enemy.y
         );
-
-        enemyVelocity.normalize();
-        enemyVelocity.scale(speed);
-        enemy.x += enemyVelocity.x;
-        enemy.y += enemyVelocity.y;
-        enemy.anims.play(animKey, true);
 
         let angle = Phaser.Math.RadToDeg(Math.atan2(enemyVelocity.y, enemyVelocity.x));
         enemy.setAngle(angle);

@@ -32,7 +32,11 @@ export default class FinishScene extends Phaser.Scene {
 
         this.displayTextAndAwaitEnter(this.textObject, message1, () => {
             this.awaitEnterPress(() => {
-                this.displayTextAndAwaitEnter(this.textObject, message2);
+                this.displayTextAndAwaitEnter(this.textObject, message2, () => {
+                    this.awaitEnterPress(() => {
+                        this.scene.start('MenuScene');  // Start the 'MenuScene' when ENTER is pressed after the second message
+                    });
+                });
             });
         });
     }

@@ -40,8 +40,8 @@ export default class LoseScene extends Phaser.Scene {
         const restartButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Restart', {
             font: '32px "Courier New"',
             fill: '#fff'
-        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.scene.start('MainScene'));
-        
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.restartGame());
+
         // Opaque and adjusted dimensions for the 'Back to Menu' button background with rounded corners
         this.drawBackgroundBox(this.cameras.main.centerX, this.cameras.main.centerY + 150, 250, 60, 20, 0x201b1b);  // Rounded corners
         const menuButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 150, 'Back to Menu', {
@@ -55,5 +55,11 @@ export default class LoseScene extends Phaser.Scene {
         graphics.fillStyle(color, 1.0);
         // Drawing a rounded rectangle
         graphics.fillRoundedRect(x - width / 2, y - height / 2, width, height, radius);
+    }
+
+    restartGame() {
+        // Stop all scenes and start MainScene to ensure a full reset
+        this.scene.stop('MainScene');
+        this.scene.start('MainScene');
     }
 }

@@ -7,15 +7,17 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.hitCooldown = false;
         this.currentDirection;
         this.enemies = [];
-
-        // Global enemy hit points
         this.enemyHits1 = 3;
         this.enemyHits2 = 3;
         this.enemyHits3 = 3;
+        this.dialogueSceneKey = 'DialogueSceneFL'; // Key for the DialogueScene
+        this.oldmanDialogue = [
+            "C:\\OldMan> This is the Internet Explorer. It can function like a target dummy for you to train for the upcoming challenges. Since they are sooo slow..."
+        ];
+        this.dialogueTriggered = false;
     }
 
     init(data) {
-        // Receive the global player health and hearts from the previous scene
         this.playerHealth = data.playerHealth || 5;
         this.heartTextures = data.hearts || ['full_health_heart', 'full_health_heart', 'full_health_heart', 'full_health_heart', 'full_health_heart'];
         this.hearts = [];
@@ -37,7 +39,6 @@ export default class FirstLeftScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.setZoom(0.95);
-        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');
@@ -168,6 +169,11 @@ export default class FirstLeftScene extends Phaser.Scene {
 
         // Add colliders between enemies
         this.physics.add.collider(this.enemyGroup, this.enemyGroup);
+
+        // Trigger the old man's dialogue after 1-2 seconds
+        this.time.delayedCall(1000, () => {
+            this.triggerOldmanDialogue();
+        });
     }
 
     update() {
@@ -439,5 +445,17 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.physics.pause();
         this.anims.pauseAll();
         this.scene.start('LoseScene');
+    }
+
+    triggerOldmanDialogue() {
+        if (!this.dialogueTriggered) {
+            this.dialogueTriggered = true;
+            this.scene.launch(this.dialogueSceneKey, { dialogueData: this.oldmanDialogue });
+            this.scene.pause();
+
+            this.events.on('resume', () => {
+                this.scene.resume();
+            });
+        }
     }
 }

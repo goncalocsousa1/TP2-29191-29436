@@ -83,7 +83,7 @@ export default class SecondUpScene extends Phaser.Scene {
         this.portal2 = this.add.sprite(450, 30, 'portal').setScale(2);
         this.portal2.anims.play('portal-idle', true);
         this.portal2.setAngle(90);
-        this.portal2.setVisible(false);
+        this.portal2.setVisible(false)
 
         this.anims.create({
             key: 'andar-direita-animation',
@@ -394,7 +394,7 @@ export default class SecondUpScene extends Phaser.Scene {
     }
 
     enterPortal(player, portal) {
-        this.scene.start('SecondUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
+        this.scene.start('ThirdUpScene', { playerHealth: this.playerHealth, hearts: this.heartTextures });
     }
 
     handlePlayerDamage(player, enemy) {

@@ -141,7 +141,7 @@ export default class MainScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.oldman, this.interactWithOldman, null, this);
         this.physics.add.overlap(this.bullets, this.oldman, this.hitOldman, null, this);
 
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
         // Add the message above the oldman
         this.showOldmanMessage();

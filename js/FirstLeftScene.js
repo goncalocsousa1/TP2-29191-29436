@@ -37,7 +37,7 @@ export default class FirstLeftScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.setZoom(0.95);
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');

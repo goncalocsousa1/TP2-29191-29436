@@ -15,6 +15,10 @@ export default class FirstLeftScene extends Phaser.Scene {
             "C:\\OldMan> This is the Internet Explorer. It can function like a target dummy for you to train for the upcoming challenges. Since they are sooo slow..."
         ];
         this.dialogueTriggered = false;
+
+        // Create healthbars for the enemies
+        this.healthbars = [];
+        this.healthbarBackgrounds = [];
     }
 
     init(data) {
@@ -71,10 +75,10 @@ export default class FirstLeftScene extends Phaser.Scene {
         // Create a group for enemies
         this.enemyGroup = this.physics.add.group();
 
-        // Create three Internet Explorer enemies
-        this.enemies.push(this.createEnemy(250, 250));
-        this.enemies.push(this.createEnemy(450, 30));
-        this.enemies.push(this.createEnemy(700, 150));
+        // Create three Internet Explorer enemies with their health bars
+        this.createEnemy(250, 250, this.enemyHits1, 0);
+        this.createEnemy(450, 30, this.enemyHits2, 1);
+        this.createEnemy(700, 150, this.enemyHits3, 2);
 
         this.portal1 = this.add.sprite(870, 265, 'portal').setScale(1.5);
         this.anims.create({
@@ -231,8 +235,8 @@ export default class FirstLeftScene extends Phaser.Scene {
 
         const enemySpeed = 40; // Speed in pixels per second
 
-        this.enemies.forEach(enemy => {
-            this.updateEnemy(enemy, enemySpeed);
+        this.enemies.forEach((enemy, index) => {
+            this.updateEnemy(enemy, enemySpeed, index);
         });
 
         this.graphics.clear();
@@ -263,12 +267,52 @@ export default class FirstLeftScene extends Phaser.Scene {
         }
     }
 
-    createEnemy(x, y) {
+    createEnemy(x, y, initialHits, index) {
         let enemy = this.physics.add.sprite(x, y, 'internet_explorer').setScale(0.20);
         enemy.setCollideWorldBounds(true);
         enemy.body.setSize(enemy.width * 0.75, enemy.height * 0.75); // Increase hitbox size to 75% of original size
+        enemy.health = initialHits;
+
+        // Create a health bar for the enemy
+        const healthBarWidth = 50;
+        const healthBarHeight = 5;
+
+        let healthbarBackground = this.add.graphics();
+        let healthbar = this.add.graphics();
+
+        healthbarBackground.fillStyle(0x808080, 1);
+        healthbarBackground.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.fillStyle(0xff0000, 1);
+        healthbar.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.setDepth(1); // Ensure health bar is drawn above other elements
+        healthbarBackground.setDepth(0.9); // Ensure background is just below the health bar
+
+        healthbarBackground.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+        healthbar.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+
+        this.healthbars[index] = healthbar;
+        this.healthbarBackgrounds[index] = healthbarBackground;
+
         this.enemyGroup.add(enemy); // Add enemy to the group
-        return enemy;
+        this.enemies.push(enemy);
+    }
+
+    updateEnemy(enemy, speed, index) {
+        this.physics.moveToObject(enemy, this.player, speed);
+
+        // Update health bar position
+        const healthBarWidth = 50;
+        this.healthbarBackgrounds[index].setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+        this.healthbars[index].setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+    }
+
+    updateEnemyHealthBar(enemy, index) {
+        const healthBarWidth = 50;
+        const healthBarHeight = 5;
+        const healthPercent = enemy.health / 3;
+        this.healthbars[index].clear();
+        this.healthbars[index].fillStyle(0xff0000, 1);
+        this.healthbars[index].fillRect(0, 0, healthBarWidth * healthPercent, healthBarHeight);
     }
 
     fireBullet() {
@@ -321,6 +365,7 @@ export default class FirstLeftScene extends Phaser.Scene {
             },
             callbackScope: this
         });
+
         this.enemies.forEach((enemy, index) => {
             this.physics.add.overlap(this.bullets, enemy, (bullet, enemy) => this.bulletHitEnemy(bullet, enemy, index), null, this);
         });
@@ -347,10 +392,14 @@ export default class FirstLeftScene extends Phaser.Scene {
                 break;
         }
         
+        enemy.health -= 1;
+        this.updateEnemyHealthBar(enemy, index);
         console.log(`Vidas restantes do Inimigo ${index + 1}:`, enemyHits - 1);
 
         if (enemyHits <= 1) {
             enemy.setActive(false).setVisible(false);
+            this.healthbars[index].destroy();
+            this.healthbarBackgrounds[index].destroy();
             enemy.body.enable = false;
             console.log(`Inimigo ${index + 1} destruído`);
             this.checkAllEnemiesDestroyed();
@@ -369,10 +418,6 @@ export default class FirstLeftScene extends Phaser.Scene {
         this.time.delayedCall(500, () => {
             icebullet.destroy();
         });
-    }
-
-    updateEnemy(enemy, speed) {
-        this.physics.moveToObject(enemy, this.player, speed);
     }
 
     checkAllEnemiesDestroyed() {

@@ -14,11 +14,9 @@ export default class SecondUpScene extends Phaser.Scene {
         this.dialogueTriggered = false;
 
         // Global enemy hit points
-        this.enemyHits1 = 4;
-        this.enemyHits2 = 4;
-        this.enemyHits3 = 4;
-        this.enemyHits4 = 4;
-        this.enemyHits5 = 4;
+        this.enemyHits = [4, 4, 4, 4, 4]; // Five enemies
+        this.healthbars = [];
+        this.healthbarBackgrounds = [];
     }
 
     init(data) {
@@ -46,7 +44,6 @@ export default class SecondUpScene extends Phaser.Scene {
 
     create() {
         this.cameras.main.setZoom(0.95);
-        //this.physics.world.createDebugGraphic();
 
         const map = this.make.tilemap({ key: 'motherboard' });
         const tileset = map.addTilesetImage('motherboard', 'tiles');
@@ -79,14 +76,12 @@ export default class SecondUpScene extends Phaser.Scene {
         // Create a group for enemies
         this.enemyGroup = this.physics.add.group();
 
-        // Create three cacodaemon enemies
-        this.enemies.push(this.createCacodaemon(300, 250));
-        this.enemies.push(this.createCacodaemon(100, 30));
-        this.enemies.push(this.createCacodaemon(700, 150));
-        
-        // Create two skeleton enemies
-        this.enemies.push(this.createSkeleton(200, 200));
-        this.enemies.push(this.createSkeleton(600, 200));
+        // Create enemies with health bars
+        this.createCacodaemon(300, 250, 0);
+        this.createCacodaemon(100, 30, 1);
+        this.createCacodaemon(700, 150, 2);
+        this.createSkeleton(200, 200, 3);
+        this.createSkeleton(600, 200, 4);
 
         this.portal1 = this.add.sprite(450, 510, 'portal').setScale(2);
         this.portal1.anims.play('portal-idle', true);
@@ -288,9 +283,9 @@ export default class SecondUpScene extends Phaser.Scene {
 
         this.enemies.forEach((enemy, index) => {
             if (enemy.texture.key === 'cacodaemon') {
-                this.updateEnemy(enemy, enemySpeed, 'cacodaemonAnim');
+                this.updateEnemy(enemy, enemySpeed, 'cacodaemonAnim', index);
             } else if (enemy.texture.key === 'skeleton') {
-                this.updateSkeleton(enemy, skeletonSpeed);
+                this.updateSkeleton(enemy, skeletonSpeed, index);
             }
         });
 
@@ -322,21 +317,119 @@ export default class SecondUpScene extends Phaser.Scene {
         }
     }
 
-    createCacodaemon(x, y) {
+    createCacodaemon(x, y, index) {
         let enemy = this.physics.add.sprite(x, y, 'cacodaemon').setScale(1);
         enemy.setCollideWorldBounds(true);
         enemy.body.setSize(enemy.width * 0.70, enemy.height * 0.70); // Increase hitbox size to 70% of original size
         enemy.anims.play('cacodaemonAnim', true); // Ensure the animation starts
+
+        // Create a health bar for the enemy
+        const healthBarWidth = 50;
+        const healthBarHeight = 5;
+
+        let healthbarBackground = this.add.graphics();
+        let healthbar = this.add.graphics();
+
+        healthbarBackground.fillStyle(0x808080, 1);
+        healthbarBackground.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.fillStyle(0xff0000, 1);
+        healthbar.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.setDepth(1); // Ensure health bar is drawn above other elements
+        healthbarBackground.setDepth(0.9); // Ensure background is just below the health bar
+
+        healthbarBackground.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+        healthbar.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+
+        this.healthbars[index] = healthbar;
+        this.healthbarBackgrounds[index] = healthbarBackground;
+
         this.enemyGroup.add(enemy); // Add enemy to the group
-        return enemy;
+        this.enemies.push(enemy);
     }
 
-    createSkeleton(x, y) {
+    createSkeleton(x, y, index) {
         let enemy = this.physics.add.sprite(x, y, 'skeleton').setScale(3);
         enemy.setCollideWorldBounds(true);
         enemy.body.setSize(enemy.width * 0.50, enemy.height * 0.50); // Decreased hitbox size to 50% of original size
+
+        // Create a health bar for the enemy
+        const healthBarWidth = 50;
+        const healthBarHeight = 5;
+
+        let healthbarBackground = this.add.graphics();
+        let healthbar = this.add.graphics();
+
+        healthbarBackground.fillStyle(0x808080, 1);
+        healthbarBackground.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.fillStyle(0xff0000, 1);
+        healthbar.fillRect(0, 0, healthBarWidth, healthBarHeight);
+        healthbar.setDepth(1); // Ensure health bar is drawn above other elements
+        healthbarBackground.setDepth(0.9); // Ensure background is just below the health bar
+
+        healthbarBackground.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+        healthbar.setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+
+        this.healthbars[index] = healthbar;
+        this.healthbarBackgrounds[index] = healthbarBackground;
+
         this.enemyGroup.add(enemy); // Add enemy to the group
-        return enemy;
+        this.enemies.push(enemy);
+    }
+
+    updateEnemy(enemy, speed, animKey, index) {
+        this.physics.moveToObject(enemy, this.player, speed);
+        enemy.anims.play(animKey, true);
+
+        let enemyVelocity = new Phaser.Math.Vector2(
+            this.player.x - enemy.x,
+            this.player.y - enemy.y
+        );
+
+        let angle = Phaser.Math.RadToDeg(Math.atan2(enemyVelocity.y, enemyVelocity.x));
+        enemy.setAngle(angle);
+
+        if (enemyVelocity.x < 0) {
+            enemy.setFlipY(true);
+        } else {
+            enemy.setFlipY(false);
+        }
+
+        // Update health bar position
+        const healthBarWidth = 50;
+        this.healthbarBackgrounds[index].setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+        this.healthbars[index].setPosition(enemy.x - healthBarWidth / 2, enemy.y - 20);
+    }
+
+    updateSkeleton(skeleton, speed, index) {
+        this.physics.moveToObject(skeleton, this.player, speed);
+        
+        let direction = new Phaser.Math.Vector2(
+            this.player.x - skeleton.x,
+            this.player.y - skeleton.y
+        ).normalize();
+
+        if (Math.abs(direction.x) > Math.abs(direction.y)) {
+            skeleton.anims.play('SkeletonLado', true);
+            skeleton.setFlipX(direction.x < 0);
+        } else if (direction.y > 0) {
+            skeleton.anims.play('SkeletonBaixo', true);
+        } else {
+            skeleton.anims.play('SkeletonCima', true);
+        }
+
+        // Update health bar position
+        const healthBarWidth = 50;
+        this.healthbarBackgrounds[index].setPosition(skeleton.x - healthBarWidth / 2, skeleton.y - 20);
+        this.healthbars[index].setPosition(skeleton.x - healthBarWidth / 2, skeleton.y - 20);
+    }
+
+    updateEnemyHealthBar(enemy, index) {
+        const healthBarWidth = 50;
+        const healthBarHeight = 5;
+        const healthPercent = this.enemyHits[index] / 4;
+        this.healthbars[index].clear();
+        this.healthbars[index].fillStyle(0xff0000, 1);
+        this.healthbars[index].fillRect(0, 0, healthBarWidth * healthPercent, healthBarHeight);
     }
 
     fireBullet() {
@@ -400,42 +493,25 @@ export default class SecondUpScene extends Phaser.Scene {
 
         this.hitCooldown = true;
 
-        let enemyHits;
-        switch(index) {
-            case 0:
-                enemyHits = --this.enemyHits1;
-                break;
-            case 1:
-                enemyHits = --this.enemyHits2;
-                break;
-            case 2:
-                enemyHits = --this.enemyHits3;
-                break;
-            case 3:
-                enemyHits = --this.enemyHits4;
-                break;
-            case 4:
-                enemyHits = --this.enemyHits5;
-                break;
-        }
+        this.enemyHits[index] -= 1;
+        
+        this.updateEnemyHealthBar(enemy, index);
+        console.log(`Vidas restantes do Inimigo ${index + 1}:`, this.enemyHits[index]);
 
-        console.log(`Vidas restantes do Inimigo ${index + 1}:`, enemyHits);
-
-        if (enemyHits <= 0) {
+        if (this.enemyHits[index] <= 0) {
             enemy.setVelocity(0); 
             if (enemy.texture.key === 'cacodaemon') {
                 enemy.anims.play('cacodaemonDeath');
             }
             enemy.setActive(false).setVisible(false);
+            this.healthbars[index].destroy();
+            this.healthbarBackgrounds[index].destroy();
             enemy.body.enable = false;
-            this.isEnemyDestroyed = true;
             console.log(`Inimigo ${index + 1} destruído`);
             this.checkAllEnemiesDestroyed();
-            
         } else {
             icebullet.anims.play('EnemyHit');
         }
-        
 
         this.time.addEvent({
             delay: 1000,
@@ -450,45 +526,8 @@ export default class SecondUpScene extends Phaser.Scene {
         });
     }
 
-    updateEnemy(enemy, speed, animKey) {
-        this.physics.moveToObject(enemy, this.player, speed);
-        enemy.anims.play(animKey, true);
-
-        let enemyVelocity = new Phaser.Math.Vector2(
-            this.player.x - enemy.x,
-            this.player.y - enemy.y
-        );
-
-        let angle = Phaser.Math.RadToDeg(Math.atan2(enemyVelocity.y, enemyVelocity.x));
-        enemy.setAngle(angle);
-
-        if (enemyVelocity.x < 0) {
-            enemy.setFlipY(true);
-        } else {
-            enemy.setFlipY(false);
-        }
-    }
-
-    updateSkeleton(skeleton, speed) {
-        this.physics.moveToObject(skeleton, this.player, speed);
-        
-        let direction = new Phaser.Math.Vector2(
-            this.player.x - skeleton.x,
-            this.player.y - skeleton.y
-        ).normalize();
-
-        if (Math.abs(direction.x) > Math.abs(direction.y)) {
-            skeleton.anims.play('SkeletonLado', true);
-            skeleton.setFlipX(direction.x < 0);
-        } else if (direction.y > 0) {
-            skeleton.anims.play('SkeletonBaixo', true);
-        } else {
-            skeleton.anims.play('SkeletonCima', true);
-        }
-    }
-
     checkAllEnemiesDestroyed() {
-        if (this.enemyHits1 <= 0 && this.enemyHits2 <= 0 && this.enemyHits3 <= 0 && this.enemyHits4 <= 0 && this.enemyHits5 <= 0) {
+        if (this.enemyHits.every(hit => hit <= 0)) {
             this.portal2.setVisible(true);
             this.portal2.anims.play('portalFinal-open', true).on('animationcomplete', () => {
                 this.portal2.anims.play('portalFinal-idle', true);

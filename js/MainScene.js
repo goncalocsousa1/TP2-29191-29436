@@ -24,6 +24,12 @@ export default class MainScene extends Phaser.Scene {
         let walls; // Reference to the wall layer
     }
 
+    init(data) {
+        this.dialogueTriggered = false;
+        this.oldmanDialogueCompleted = false;
+        this.portal1 = null;
+    }
+
     preload() {
         console.log("preload");
         
